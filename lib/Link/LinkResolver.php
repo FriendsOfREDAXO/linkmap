@@ -223,7 +223,11 @@ final class LinkResolver
             $currentDomain = null !== $domainObj && 'default' !== $domainObj->getName() ? (string) $domainObj->getName() : '';
         }
 
-        $schemes = array_values(array_filter(SchemeRegistry::getSchemes($table), static fn (Scheme $s): bool => $s->supportsClang($clang)));
+        // Freigabe pro Tabelle (Einstellungen -> Datensatz-Quellen): nur die dort
+        // angehakten Schemata; ohne Angabe alle. Ein explizit im Link genanntes
+        // Schema (?scheme=...) bleibt davon unberuehrt (urlFor()).
+        $allowed = TableConfig::allowedSchemes($table);
+        $schemes = array_values(array_filter(SchemeRegistry::getSchemes($table), static fn (Scheme $s): bool => $s->supportsClang($clang) && ([] === $allowed || in_array($s->id(), $allowed, true))));
         usort($schemes, static function (Scheme $a, Scheme $b) use ($currentDomain): int {
             $rank = static function (Scheme $s) use ($currentDomain): int {
                 if ('' !== $currentDomain && $s->domain === $currentDomain) {

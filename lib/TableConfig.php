@@ -19,6 +19,7 @@ use function is_array;
  *   filter       zusaetzliche WHERE-Klausel, z.B. "status = 1"
  *   clang_field  Spalte mit Sprach-ID, leer = sprachunabhaengig
  *   url_template Fallback-URL ohne Schema, z.B. "/news/{id}" (Platzhalter {spalte})
+ *   schemes      erlaubte URL-Schemata (Kennungen wie "url:news,vu:3"); leer = alle
  */
 final class TableConfig
 {
@@ -41,6 +42,17 @@ final class TableConfig
     {
         $config = self::get($table);
         return null !== $config && !empty($config['enabled']);
+    }
+
+    /**
+     * Erlaubte Schema-Kennungen einer Tabelle; leer = alle Schemata erlaubt.
+     *
+     * @return list<string>
+     */
+    public static function allowedSchemes(string $table): array
+    {
+        $raw = (string) (self::get($table)['schemes'] ?? '');
+        return array_values(array_filter(array_map('trim', explode(',', $raw)), static fn (string $s): bool => '' !== $s));
     }
 
     /** @return list<string> */

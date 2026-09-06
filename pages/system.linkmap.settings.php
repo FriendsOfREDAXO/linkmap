@@ -60,6 +60,7 @@ if (\FriendsOfRedaxo\Linkmap\Source\YFormSourceProvider::isAvailable()) {
                     'filter' => trim((string) ($values['filter'] ?? '')),
                     'clang_field' => trim((string) ($values['clang_field'] ?? '')),
                     'url_template' => trim((string) ($values['url_template'] ?? '')),
+                    'schemes' => implode(',', array_map('strval', array_values((array) ($values['schemes'] ?? [])))),
                 ];
             }
             \FriendsOfRedaxo\Linkmap\TableConfig::save($config);
@@ -72,10 +73,12 @@ if (\FriendsOfRedaxo\Linkmap\Source\YFormSourceProvider::isAvailable()) {
     foreach (rex_yform_manager_table::getAll() as $table) {
         $name = $table->getTableName();
         $cfg = $existing[$name] ?? [];
+        // Schemata als Checkboxen: keins angehakt = alle erlaubt (Default)
         $schemes = \FriendsOfRedaxo\Linkmap\Link\SchemeRegistry::getSchemes($name);
+        $allowedSchemes = \FriendsOfRedaxo\Linkmap\TableConfig::allowedSchemes($name);
         $schemeInfo = [] === $schemes
             ? '<span class="text-muted">' . rex_i18n::msg('linkmap_tables_no_scheme') . '</span>'
-            : implode('<br>', array_map(static fn ($s) => '<small>' . rex_escape($s->label) . '</small>', $schemes));
+            : '<small class="text-muted">' . rex_i18n::msg('linkmap_tables_schemes_hint') . '</small>' . implode('', array_map(static fn ($s) => '<div class="checkbox" style="margin:2px 0"><label><input type="checkbox" name="tables[' . rex_escape($name) . '][schemes][]" value="' . rex_escape($s->id()) . '"' . (in_array($s->id(), $allowedSchemes, true) ? ' checked' : '') . '> <small>' . rex_escape($s->label) . ' <code>' . rex_escape($s->id()) . '</code></small></label></div>', $schemes));
         $field = static fn (string $key, string $placeholder = '') => '<input class="form-control input-sm" type="text" name="tables[' . rex_escape($name) . '][' . $key . ']" value="' . rex_escape((string) ($cfg[$key] ?? '')) . '" placeholder="' . rex_escape($placeholder) . '">';
         $rows .= '<tr' . ($table->isHidden() ? ' class="text-muted"' : '') . '>'
             . '<td class="text-center"><input type="checkbox" name="tables[' . rex_escape($name) . '][enabled]" value="1"' . (!empty($cfg['enabled']) ? ' checked' : '') . '></td>'

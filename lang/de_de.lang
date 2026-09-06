@@ -170,3 +170,4 @@ linkmap_demo_resolver_url = url-Addon: zwei Profile (Namespaces {0}) – zeigt d
 linkmap_demo_resolver_template = Nur URL-Template /redaxo-news/{id} – einfache Demo ohne Schema-Auswahl
 linkmap_demo_tableset_item_resolver = eine URL-Auflösung nach Wahl (siehe unten); Profile leiten nur ihre eigenen Trigger bzw. Namespaces auf den Start- bzw. 404-Artikel
 linkmap_demo_scheme_hint_url = Die Tabelle hat zwei url-Addon-Profile. Bei der Einzelauswahl eines Datensatzes erscheint deshalb der Dialog „URL-Schema wählen“ mit Vorschau-URLs; bei Mehrfachauswahl und im Relation-Modus wird das Schema beim Rendern automatisch gewählt.
+linkmap_tables_schemes_hint = Nur angehakte Schemata werden im Picker angeboten und beim Rendern genutzt; keines angehakt = alle.

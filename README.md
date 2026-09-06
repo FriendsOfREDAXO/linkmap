@@ -35,6 +35,8 @@ Das ist der Kern der Datensatz-Unterstützung: Linkmap speichert für einen Date
 
 Mehrfachauswahl und Relation-Modus zeigen keinen Dialog, dort gilt „Automatisch“ beziehungsweise nur die ID.
 
+**Schemata einschränken:** Hat eine Tabelle Profile, die nicht als Linkziel taugen, etwa „editnews“ oder „news_delete“ neben „news“, lassen sich unter System → Linkmap → Einstellungen → Datensatz-Quellen pro Tabelle die erlaubten Schemata anhaken. Nur diese erscheinen im Dialog und werden beim Rendern genutzt; ist nur eines erlaubt, entfällt der Dialog. Bereits gespeicherte Links mit festem `?scheme=` bleiben gültig.
+
 **Auflösen** übernimmt Linkmap: `href="yform://…"` wird im Frontend per OUTPUT_FILTER ersetzt, in Modulen liefert `LinkResolver::url($link)` die URL. Reihenfolge: festes Schema, url-Addon, virtual_urls, Extension Point `LINKMAP_RESOLVE_URL`, URL-Template aus den Tabelleneinstellungen. Editoren wie CKE5 und TinyMCE brauchen damit keine eigene YForm-Linklösung mehr.
 
 **Ausprobieren:** Die Demo-Seite installiert auf Wunsch eine Tabelle „REDAXO-News“ und legt dabei nach Wahl zwei url-Addon-Profile oder zwei virtual_urls-Profile an, damit der Schema-Dialog sofort sichtbar ist. Ohne beide Addons bleibt es beim URL-Template.
@@ -149,7 +151,7 @@ Listenansicht, Suche und die Löschsperre beim Löschen verlinkter Artikel sind 
 
 ### Datensätze und `yform://`-Links
 
-**Freigeben:** System → Linkmap → Einstellungen → Datensatz-Quellen. Pro Tabelle: Label-Template (`{title} ({date})`), Suchspalten, Spalten der Listenansicht, Sortierung, Filter, Sprachspalte, URL-Template. Leer gelassene Felder nutzen die YForm-Felddefinitionen. Rechte über `yform_manager_table_view` / `_edit`. Im Relation-Modus muss die Tabelle nicht freigegeben sein, das Feld legt sie fest.
+**Freigeben:** System → Linkmap → Einstellungen → Datensatz-Quellen. Pro Tabelle: Label-Template (`{title} ({date})`), Suchspalten, Spalten der Listenansicht, Sortierung, Filter, Sprachspalte, erlaubte URL-Schemata, URL-Template. Leer gelassene Felder nutzen die YForm-Felddefinitionen. Rechte über `yform_manager_table_view` / `_edit`. Im Relation-Modus muss die Tabelle nicht freigegeben sein, das Feld legt sie fest.
 
 **Linkformat:** `yform://<tabelle>/<id>`, optional mit festem URL-Schema: `?scheme=url:<namespace>` (url-Addon-Profil) oder `?scheme=vu:<profil-id>` (virtual_urls). Ohne Schema entscheidet der Resolver beim Rendern nach Sprache und aktueller Domain. Hat eine Tabelle mehrere Schemata, zeigt der Picker bei der Einzelauswahl einen Dialog mit Vorschau-URLs.
 
