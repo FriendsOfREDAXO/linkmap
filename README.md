@@ -2,7 +2,7 @@
 
 Das Linkmap-Popup von REDAXO ist alt. Man klickt auf das kleine Icon, ein Fenster geht auf, man hangelt sich durch Kategorien, klickt einen Artikel an, das Fenster geht zu. Funktioniert, fühlt sich aber an wie 2008.
 
-Dieses Addon ersetzt das Popup durch ein Overlay, so wie MediaPlace es für den Medienpool macht: Strukturbaum mit Live-Filter, Artikelsuche über die ganze Struktur, zuletzt bearbeitete Artikel, Favoriten, yrewrite-Domain-Filter, Tastaturbedienung, Dark Mode. Und weil ein Link nicht immer auf einen Artikel zeigt, kann der Picker auch YForm-Datensätze liefern, mitsamt der Auflösung zur Frontend-URL.
+Dieses Addon ersetzt das Popup durch ein Overlay, so wie MediaPlace es für den Medienpool macht: Strukturbaum mit Live-Filter, Artikelsuche über die ganze Struktur, zuletzt bearbeitete Artikel, Favoriten, yrewrite-Domain-Filter, Tastaturbedienung, Dark Mode. Und weil ein Link nicht immer auf einen Artikel zeigt, kann der Picker auch YForm-Datensätze liefern. Die Frontend-URL dazu kommt aus dem **url-Addon** oder aus **virtual_urls**, beide werden direkt unterstützt, auch nebeneinander und mit mehreren Profilen pro Tabelle.
 
 Es ist ein Picker. Er ersetzt nicht die Strukturverwaltung und nicht den Table Manager.
 
@@ -18,6 +18,28 @@ Addon installieren, fertig. Ab jetzt öffnen alle klassischen Linkmap-Aufrufe da
 Die Core-Widgets bleiben unverändert. Das Addon biegt die JavaScript-Funktionen `openLinkMap()`, `openREXLinklist()` und `newLinkMapWindow()` um und gibt den Aufrufern ein Objekt zurück, das sich wie das alte Popup-Fenster verhält (`rex:selectLink`-Event, `close()`, `closed`). Deshalb muss an bestehendem Code nichts geändert werden.
 
 Verwaltung unter **System → Linkmap**: Einstellungen, Demo, Hilfe. Die Demo-Seite zeigt alle Aufrufwege mit echten Daten aus der Installation. Für die YForm-Beispiele bietet sie an, ein kleines Demo-Tableset zu installieren, das sich dort auch wieder entfernen lässt. Ohne diesen Schritt legt das Addon keine Tabellen an.
+
+## url-Addon und virtual_urls
+
+Das ist der Kern der Datensatz-Unterstützung: Linkmap speichert für einen Datensatz keinen fertigen Pfad, sondern `yform://<tabelle>/<id>`. Welche URL daraus wird, entscheiden die URL-Addons, die ohnehin die Frontend-Routen kennen.
+
+| Addon | Was Linkmap daraus macht |
+| --- | --- |
+| **url-Addon** (ab 2.x) | Jedes Profil einer Tabelle ist ein URL-Schema (Kennung `url:<namespace>`). Die URL kommt aus der URL-Tabelle des Addons; fehlt sie für einen Datensatz noch, erzeugt Linkmap sie einmalig. Restriktionen des Profils gelten, ein Datensatz außerhalb bekommt keine URL. |
+| **virtual_urls** (ab 1.2) | Jedes aktive Profil einer Tabelle ist ein Schema (Kennung `vu:<profil-id>`), inklusive Sprache und Domain des Profils. Nutzt die Profil-API der Version 1.2, die für Linkmap entstanden ist. |
+
+**So läuft die Auswahl:** Hat die Tabelle genau ein Schema, wählt der Redakteur den Datensatz und fertig. Hat sie mehrere, etwa zwei Domains oder zwei Landingpages, klappt bei der Einzelauswahl der Dialog „URL-Schema wählen“ auf, mit Vorschau-URL pro Profil:
+
+- **Automatisch** speichert `yform://rex_news/42`. Beim Rendern nimmt der Resolver das erste Schema, das passt: Sprache, dann aktuelle Domain, dann domainunabhängige Profile. Derselbe Link löst also auf jeder Domain zu ihrer eigenen URL auf.
+- **Ein bestimmtes Profil** speichert `yform://rex_news/42?scheme=vu:3` oder `?scheme=url:news-id`. Dieses Profil wird beim Rendern immer genommen; fällt es weg, greift wieder die automatische Kette.
+
+Mehrfachauswahl und Relation-Modus zeigen keinen Dialog, dort gilt „Automatisch“ beziehungsweise nur die ID.
+
+**Auflösen** übernimmt Linkmap: `href="yform://…"` wird im Frontend per OUTPUT_FILTER ersetzt, in Modulen liefert `LinkResolver::url($link)` die URL. Reihenfolge: festes Schema, url-Addon, virtual_urls, Extension Point `LINKMAP_RESOLVE_URL`, URL-Template aus den Tabelleneinstellungen. Editoren wie CKE5 und TinyMCE brauchen damit keine eigene YForm-Linklösung mehr.
+
+**Ausprobieren:** Die Demo-Seite installiert auf Wunsch eine Tabelle „REDAXO-News“ und legt dabei nach Wahl zwei url-Addon-Profile oder zwei virtual_urls-Profile an, damit der Schema-Dialog sofort sichtbar ist. Ohne beide Addons bleibt es beim URL-Template.
+
+Zwei Stolperfallen aus der Praxis: Ein url-Addon-Profil „für alle Sprachen“ braucht eine Sprachspalte in der Tabelle, sonst erzeugt das Addon keine URLs. Und virtual_urls vor 1.2 kennt keine Profil-API, Linkmap ignoriert es dann.
 
 ## Was Redakteure sehen
 
@@ -145,7 +167,7 @@ Kette: explizites Schema, url-Addon-Profil, virtual_urls-Profil, Extension Point
 
 Altformate der bisherigen Editor-Lösungen (`news://5`, `rex-news://5`, `rex_news://5`) löst die Einstellung „Altformate ebenfalls auflösen“ (Default aus) über url-Namespace oder Tabellenname auf.
 
-virtual_urls wird ab Version 1.2 unterstützt (Profil-API und `URL_REWRITE`-Hook).
+Details zu url-Addon und virtual_urls stehen oben im Abschnitt „url-Addon und virtual_urls“.
 
 ### Eigene Quellen und Schemata
 
