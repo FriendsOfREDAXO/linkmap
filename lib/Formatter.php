@@ -15,18 +15,20 @@ use rex_structure_element;
 final class Formatter
 {
     /**
-     * @return array{id: int, name: string, label: string, link: string, online: bool, status: int, parentId: int, clang: int, domain: string, path: list<string>, hasChildren: bool}
+     * @return array{id: int, name: string, label: string, link: string, online: bool, status: int, lockedBy: string|null, parentId: int, clang: int, domain: string, path: list<string>, hasChildren: bool}
      */
     public static function category(rex_category $category): array
     {
         $id = $category->getId();
+        $lockedBy = self::lockedBy($category);
         return [
             'id' => $id,
             'name' => self::name($category),
             'label' => self::label($category),
             'link' => 'redaxo://' . $id,
-            'online' => $category->isOnline(),
-            'status' => (int) $category->getValue('status'),
+            'online' => $category->isOnline() && null === $lockedBy,
+            'status' => null !== $lockedBy ? LockInheritance::LOCKED_STATUS : (int) $category->getValue('status'),
+            'lockedBy' => $lockedBy,
             'parentId' => $category->getParentId(),
             'clang' => $category->getClangId(),
             'domain' => DomainResolver::domainOf($id, $category->getClangId()),
@@ -36,21 +38,23 @@ final class Formatter
     }
 
     /**
-     * @return array{id: int, name: string, label: string, link: string, online: bool, status: int, startarticle: bool, sitestart: bool, hasTemplate: bool, categoryId: int, parentId: int, clang: int, clangCode: string, domain: string, path: list<string>, updatedate: int, updateuser: string}
+     * @return array{id: int, name: string, label: string, link: string, online: bool, status: int, lockedBy: string|null, startarticle: bool, sitestart: bool, hasTemplate: bool, categoryId: int, parentId: int, clang: int, clangCode: string, domain: string, path: list<string>, updatedate: int, updateuser: string}
      */
     public static function article(rex_article $article): array
     {
         $id = $article->getId();
         $clang = $article->getClangId();
         $clangObj = rex_clang::get($clang);
+        $lockedBy = self::lockedBy($article);
 
         return [
             'id' => $id,
             'name' => self::name($article),
             'label' => self::label($article),
             'link' => 'redaxo://' . $id,
-            'online' => $article->isOnline(),
-            'status' => (int) $article->getValue('status'),
+            'online' => $article->isOnline() && null === $lockedBy,
+            'status' => null !== $lockedBy ? LockInheritance::LOCKED_STATUS : (int) $article->getValue('status'),
+            'lockedBy' => $lockedBy,
             'startarticle' => $article->isStartArticle(),
             'sitestart' => $article->isSiteStartArticle(),
             'hasTemplate' => $article->hasTemplate(),
@@ -63,6 +67,20 @@ final class Formatter
             'updatedate' => (int) $article->getUpdateDate(),
             'updateuser' => (string) $article->getUpdateUser(),
         ];
+    }
+
+    /**
+     * Name der Kategorie, deren accessdenied-Sperre auf das Element vererbt
+     * wird (nur mit aktivierter Vererbung und nur, wenn das Element selbst
+     * nicht bereits gesperrt ist), sonst null.
+     */
+    private static function lockedBy(rex_structure_element $element): ?string
+    {
+        if (LockInheritance::LOCKED_STATUS === (int) $element->getValue('status')) {
+            return null;
+        }
+        $category = LockInheritance::lockingCategory($element);
+        return null !== $category ? self::name($category) : null;
     }
 
     /** Anzeigename; leere Namen bekommen den Platzhalter der klassischen Linkmap. */

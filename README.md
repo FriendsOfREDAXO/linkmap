@@ -52,7 +52,7 @@ Zwei Stolperfallen aus der Praxis: Ein url-Addon-Profil „für alle Sprachen“
 | Inhalt | Unterkategorien und Artikel der Kategorie mit ID, Status und Änderungsdatum; eine Kategorie lässt sich über den Haken neben dem Pfeil direkt auswählen (verlinkt ihren Startartikel), ohne sie zu öffnen. Suchergebnisse mit Pfad. Datensätze als sortierbare Tabelle mit „Neuer Datensatz“ und „Datensatz bearbeiten“ |
 | Fußzeile | „Nur Online anzeigen“, bei Mehrfachauswahl Zähler und Übernehmen |
 
-Startartikel und Startseite haben eigene Icons und Farben. Status-Erweiterungen wie „gesperrt“ aus dem accessdenied-Addon werden mit Label und Icon angezeigt.
+Startartikel und Startseite haben eigene Icons und Farben. Status-Erweiterungen wie „gesperrt“ aus dem accessdenied-Addon werden mit Label und Icon angezeigt; ist dort „Kategoriestatus vererben“ aktiv, gelten Artikel und Unterkategorien gesperrter Kategorien ebenfalls als gesperrt, markiert mit „(vererbt)“ und der sperrenden Kategorie im Tooltip.
 
 Tastatur: `↓`/`↑` bewegen, `Enter` wählt, `Leertaste` markiert (Mehrfachauswahl), `Backspace` eine Ebene hoch, `Esc` schließt.
 

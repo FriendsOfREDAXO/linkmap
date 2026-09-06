@@ -25,3 +25,4 @@
 - Kategorien direkt auswählen (Startartikel) über einen Haken neben dem Pfeil, in der Mehrfachauswahl als Markierung
 - Kategorie-Picker: Option `categoriesOnly`, Widget `data-lm-categories`, YForm-Option, Bridge `pickCategory()` – nur Kategorien sichtbar, Wert = Startartikel
 - Kategorie-Picker: „Kategorie übernehmen“ im Footer nimmt die geöffnete Kategorie (auch nach Auswahl im Baum)
+- accessdenied: vererbte Sperren (Option „Kategoriestatus vererben“) werden im Picker als gesperrt angezeigt

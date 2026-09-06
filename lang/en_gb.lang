@@ -181,3 +181,5 @@ linkmap_yform_categories = Categories only (category picker, value = start artic
 linkmap_demo_widget_categories = Category picker (categories only, value = start article ID)
 linkmap_demo_widget_categories_link = Category picker in link format (multiple, value = redaxo://ID)
 linkmap_apply_category = Use category: {name}
+linkmap_status_inherited = (inherited)
+linkmap_status_inherited_title = Lock inherited from category "{name}"

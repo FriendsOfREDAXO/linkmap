@@ -570,6 +570,7 @@ html.lm-scroll-lock { overflow: hidden; }
 #lm-overlay .lm-state:not(.lm-state-0):not(.lm-state-1) { color: var(--lm-locked); font-weight: 600; }
 #lm-overlay .lm-state:not(.lm-state-0):not(.lm-state-1) .lm-status-dot { background: var(--lm-locked); }
 #lm-overlay .lm-tree-status { color: var(--lm-locked); font-size: 10px; margin-left: 4px; }
+#lm-overlay .lm-state-inherited { font-weight: 400; opacity: 0.8; }
 
 #lm-overlay .lm-muted { color: var(--lm-muted); padding: 6px 8px; }
 #lm-overlay .lm-empty { padding: 20px 8px; text-align: center; }

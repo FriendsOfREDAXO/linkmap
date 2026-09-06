@@ -209,9 +209,10 @@
 
     function statusHtml(item, kind) {
         var info = statusInfo(item, kind);
-        return '<span class="lm-state lm-state-' + info.status + '">' +
+        var inherited = item.lockedBy ? ' <span class="lm-state-inherited" title="' + esc(t('linkmap_status_inherited_title', { name: item.lockedBy })) + '">' + esc(t('linkmap_status_inherited')) + '</span>' : '';
+        return '<span class="lm-state lm-state-' + info.status + '"' + (item.lockedBy ? ' title="' + esc(t('linkmap_status_inherited_title', { name: item.lockedBy })) + '"' : '') + '>' +
             (info.icon ? '<i class="' + esc(info.icon) + '"></i> ' : '<span class="lm-status-dot"></span>') +
-            esc(info.label) + '</span>';
+            esc(info.label) + inherited + '</span>';
     }
 
     function passesFilters(item) {
