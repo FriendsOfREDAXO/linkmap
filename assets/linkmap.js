@@ -177,9 +177,20 @@
     // eigene Farbe (CSS: .lm-icon-start / .lm-icon-sitestart), damit sie sich
     // in Liste, Suche und Verlauf von normalen Artikeln abheben.
     function articleIcon(article) {
+        if (isLocked(article, 'article')) return 'fa-solid fa-lock lm-icon-locked';
         if (article.sitestart) return 'fa-solid fa-house lm-icon-sitestart';
         if (article.startarticle) return 'fa-solid fa-folder-open lm-icon-start';
         return 'fa-regular fa-file';
+    }
+
+    // Gesperrte Kategorien/Artikel (Status > 1, z.B. accessdenied) bekommen
+    // statt Ordner/Datei ein rotes Schloss (CSS: .lm-icon-locked).
+    function isLocked(item, kind) {
+        return statusInfo(item, kind).status > 1;
+    }
+
+    function categoryIcon(cat) {
+        return isLocked(cat, 'category') ? 'fa-solid fa-lock lm-icon-locked' : 'fa-solid fa-folder';
     }
 
     // Domain-Badge nur, wenn das Element NICHT auf der Standard-Domain
@@ -922,8 +933,7 @@
                         ? '<button type="button" class="lm-tree-toggle" tabindex="-1"><i class="fa-solid fa-chevron-right"></i></button>'
                         : '<span class="lm-tree-toggle lm-tree-leaf"></span>') +
                     '<a href="#" class="lm-tree-link" data-cat="' + node.id + '" title="' + esc(node.name) + ' [' + node.id + ']' + (showDomain(node) ? ' · ' + esc(node.domain) : '') + '">' +
-                        '<i class="fa-solid fa-folder lm-tree-icon"></i> <span class="lm-tree-name">' + esc(node.name) + '</span>' +
-                        (statusInfo(node, 'category').icon ? '<i class="lm-tree-status ' + esc(statusInfo(node, 'category').icon) + '" title="' + esc(statusInfo(node, 'category').label) + '"></i>' : '') +
+                        '<i class="' + categoryIcon(node) + ' lm-tree-icon"' + (isLocked(node, 'category') ? ' title="' + esc(statusInfo(node, 'category').label + (node.lockedBy ? ' – ' + t('linkmap_status_inherited_title', { name: node.lockedBy }) : '')) + '"' : '') + '></i> <span class="lm-tree-name">' + esc(node.name) + '</span>' +
                         '<span class="lm-id">' + node.id + '</span>' +
                     '</a>' +
                     '<button type="button" class="lm-fav-toggle' + (isFavorite(node.id) ? ' lm-fav-active' : '') + '" data-id="' + node.id + '" tabindex="-1" title="' + esc(isFavorite(node.id) ? t('linkmap_favorite_remove') : t('linkmap_favorite_add')) + '"><i class="' + (isFavorite(node.id) ? 'fa-solid' : 'fa-regular') + ' fa-star"></i></button>' +
@@ -1015,7 +1025,7 @@
         var leaf = state.categoriesOnly && cat.hasChildren === false;
         return '<div class="lm-row lm-row-category' + (cat.online ? '' : ' lm-offline') + (selected ? ' lm-selected' : '') + (leaf ? ' lm-row-leaf' : '') + '" data-id="' + cat.id + '" role="option" aria-selected="' + (selected ? 'true' : 'false') + '">' +
             (state.multiple ? '<span class="lm-check lm-check-category" data-action="pick-category" title="' + esc(t('linkmap_pick_category')) + '"><i class="fa-solid fa-check"></i></span>' : '') +
-            '<i class="lm-row-icon fa-solid fa-folder"></i>' +
+            '<i class="lm-row-icon ' + categoryIcon(cat) + '"></i>' +
             '<div class="lm-row-main">' +
                 '<div class="lm-row-title"><span class="lm-row-name">' + esc(cat.name) + '</span><span class="lm-id">' + cat.id + '</span>' +
                     (showDomain(cat) && !state.domain ? '<span class="lm-domain-badge">' + esc(cat.domain) + '</span>' : '') +
