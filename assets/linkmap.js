@@ -995,7 +995,10 @@
     function categoryRowHtml(cat) {
         var pickable = !!state.callback;
         var selected = pickable && state.multiple && isSelected(cat.id);
-        return '<div class="lm-row lm-row-category' + (cat.online ? '' : ' lm-offline') + (selected ? ' lm-selected' : '') + '" data-id="' + cat.id + '" role="option" aria-selected="' + (selected ? 'true' : 'false') + '">' +
+        // Kategorie-Picker: Blaetter (ohne Unterkategorien) werden per Klick
+        // direkt gewaehlt, es gibt nichts zu oeffnen -- kein Pfeil.
+        var leaf = state.categoriesOnly && cat.hasChildren === false;
+        return '<div class="lm-row lm-row-category' + (cat.online ? '' : ' lm-offline') + (selected ? ' lm-selected' : '') + (leaf ? ' lm-row-leaf' : '') + '" data-id="' + cat.id + '" role="option" aria-selected="' + (selected ? 'true' : 'false') + '">' +
             (state.multiple ? '<span class="lm-check lm-check-category" data-action="pick-category" title="' + esc(t('linkmap_pick_category')) + '"><i class="fa-solid fa-check"></i></span>' : '') +
             '<i class="lm-row-icon fa-solid fa-folder"></i>' +
             '<div class="lm-row-main">' +
@@ -1006,7 +1009,7 @@
             '</div>' +
             '<div class="lm-row-actions">' +
                 (pickable && !state.multiple ? '<button type="button" class="lm-row-action lm-row-pick lm-row-pick-category" data-action="pick-category" title="' + esc(t('linkmap_pick_category')) + '"><i class="fa-solid fa-check"></i></button>' : '') +
-                '<span class="lm-row-action lm-row-open" title="' + esc(t('linkmap_open_category_hint')) + '"><i class="fa-solid fa-chevron-right"></i></span>' +
+                (leaf ? '' : '<span class="lm-row-action lm-row-open" title="' + esc(t('linkmap_open_category_hint')) + '"><i class="fa-solid fa-chevron-right"></i></span>') +
             '</div>' +
         '</div>';
     }
@@ -1340,6 +1343,10 @@
         row = row || state.rows[state.activeIndex];
         if (!row) return;
         if (row.classList.contains('lm-row-category')) {
+            if (row.classList.contains('lm-row-leaf') && state.callback) {
+                pickCategory(row);
+                return;
+            }
             openCategory(parseInt(row.getAttribute('data-id'), 10));
             return;
         }

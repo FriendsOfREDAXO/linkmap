@@ -24,3 +24,4 @@
 - Erlaubte URL-Schemata pro Tabelle (Datensatz-Quellen): nur angehakte Profile im Picker und bei der Auflösung
 - Kategorien direkt auswählen (Startartikel) über einen Haken neben dem Pfeil, in der Mehrfachauswahl als Markierung
 - Kategorie-Picker: Option `categoriesOnly`, Widget `data-lm-categories`, YForm-Option, Bridge `pickCategory()` – nur Kategorien sichtbar, Wert = Startartikel
+- Kategorie-Picker: Kategorien ohne Unterkategorien werden per Klick direkt ausgewählt

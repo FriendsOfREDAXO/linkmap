@@ -15,7 +15,7 @@ use rex_structure_element;
 final class Formatter
 {
     /**
-     * @return array{id: int, name: string, label: string, link: string, online: bool, status: int, parentId: int, clang: int, domain: string, path: list<string>}
+     * @return array{id: int, name: string, label: string, link: string, online: bool, status: int, parentId: int, clang: int, domain: string, path: list<string>, hasChildren: bool}
      */
     public static function category(rex_category $category): array
     {
@@ -31,6 +31,7 @@ final class Formatter
             'clang' => $category->getClangId(),
             'domain' => DomainResolver::domainOf($id, $category->getClangId()),
             'path' => self::path($category),
+            'hasChildren' => [] !== $category->getChildren(false),
         ];
     }
 
