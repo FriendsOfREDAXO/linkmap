@@ -85,15 +85,18 @@ $body = '<p>' . rex_i18n::msg('linkmap_demo_widget_intro') . '</p>'
     . '<div class="form-group"><label>' . rex_i18n::msg('linkmap_demo_widget_prefilled') . '</label>' . Widget::render('demo_article_prefilled', $articleId1) . '</div>'
     . '<div class="form-group"><label>' . rex_i18n::msg('linkmap_demo_widget_multi') . '</label>' . Widget::render('demo_articles', $articleIdList, ['multiple' => true, 'max' => 5]) . '</div>'
     . '<div class="form-group"><label>' . rex_i18n::msg('linkmap_demo_widget_categories') . '</label>' . Widget::render('demo_category', '', ['categories' => true]) . '</div>'
+    . '<div class="form-group"><label>' . rex_i18n::msg('linkmap_demo_widget_categories_link') . '</label>' . Widget::render('demo_category_link', '', ['categories' => true, 'format' => 'link', 'multiple' => true]) . '</div>'
     . $code("// PHP
 echo \\FriendsOfRedaxo\\Linkmap\\Widget::render('link', \$value);
 echo \\FriendsOfRedaxo\\Linkmap\\Widget::render('links', \$value, ['multiple' => true, 'max' => 5, 'category' => 5, 'domain' => 'example.org']);
-echo \\FriendsOfRedaxo\\Linkmap\\Widget::render('category', \$value, ['categories' => true]); // Kategorie-Picker
+echo \\FriendsOfRedaxo\\Linkmap\\Widget::render('category', \$value, ['categories' => true]); // Kategorie-Picker, Wert = ID
+echo \\FriendsOfRedaxo\\Linkmap\\Widget::render('category', \$value, ['categories' => true, 'format' => 'link']); // Wert = redaxo://ID
 
 // HTML (Wert = Artikel-ID, bei Mehrfachauswahl kommasepariert)
 <input class=\"lm-widget\" name=\"link\" value=\"12\">
 <input class=\"lm-widget\" name=\"links\" data-lm-multiple=\"true\" data-lm-max=\"5\" value=\"12,15\">
 <input class=\"lm-widget\" name=\"category\" data-lm-categories=\"true\" value=\"5\">
+<input class=\"lm-widget\" name=\"category\" data-lm-categories=\"true\" data-lm-format=\"link\" value=\"redaxo://5\">
 
 // JS: LM.open(cb, { categoriesOnly: true }) oder rex5LinkmapBridge.pickCategory(cb)");
 $section(rex_i18n::msg('linkmap_demo_section_widget'), $body);

@@ -117,7 +117,10 @@ if (window.rex5LinkmapBridge && rex5LinkmapBridge.isActive()) {
 <input class="lm-widget" name="targets" data-lm-format="link" data-lm-sources="all" value="redaxo://12,yform://rex_news/3">
 <input class="lm-widget" name="ref" data-lm-table="rex_news" data-lm-multiple="true" value="3,7">
 <input class="lm-widget" name="category" data-lm-categories="true" value="5">
+<input class="lm-widget" name="category" data-lm-categories="true" data-lm-format="link" value="redaxo://5">
 ```
+
+Der Kategorie-Picker speichert wahlweise die ID (Default, wie REX_LINK) oder mit `data-lm-format="link"` den Link `redaxo://ID`; beim YForm-Werttyp entsprechend „Nur Kategorien“ plus Speicherformat.
 
 Der Input bleibt im Formular (als `hidden`) und löst `change` sowie `rex:change` aus. Attribute: `data-lm-multiple`, `data-lm-max`, `data-lm-clang`, `data-lm-category`, `data-lm-domain`, `data-lm-format="link"`, `data-lm-sources`, `data-lm-table`, `data-lm-categories`. Auf pjax-Seiten initialisiert `rex:ready` nach, manuell per `LMWidget.init(container)`.
 
@@ -130,7 +133,8 @@ echo Widget::render('link', $value);
 echo Widget::render('links', $value, ['multiple' => true, 'max' => 5, 'category' => 5, 'domain' => 'example.org']);
 echo Widget::render('targets', $value, ['multiple' => true, 'format' => 'link', 'sources' => 'all']);
 echo Widget::render('ref', $value, ['table' => 'rex_news', 'multiple' => true]);
-echo Widget::render('category', $value, ['categories' => true]);
+echo Widget::render('category', $value, ['categories' => true]);                    // Wert = ID
+echo Widget::render('category', $value, ['categories' => true, 'format' => 'link']); // Wert = redaxo://ID
 ```
 
 ### YForm

@@ -179,3 +179,4 @@ linkmap_widget_open_category = Kategorie auswählen
 linkmap_widget_add_category = Kategorie hinzufügen
 linkmap_yform_categories = Nur Kategorien (Kategorie-Picker, Wert = Startartikel-ID)
 linkmap_demo_widget_categories = Kategorie-Picker (nur Kategorien, Wert = Startartikel-ID)
+linkmap_demo_widget_categories_link = Kategorie-Picker im Link-Format (Mehrfachauswahl, Wert = redaxo://ID)
