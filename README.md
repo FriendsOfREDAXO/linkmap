@@ -235,3 +235,26 @@ Alle Endpunkte sind `rex_api_function`s, antworten JSON und prüfen Login sowie 
 | --- | --- |
 | `LINKMAP_RESOLVE_URL` | URL für `yform://`-Links liefern, wenn kein Schema greift |
 | `YFORM_ARTICLE_IS_IN_USE` (YForm) | Linkmap ergänzt seine Felder für die Löschsperre |
+
+## Autor
+
+**Friends Of REDAXO**
+
+* http://www.redaxo.org
+* https://github.com/FriendsOfREDAXO
+
+**Projektleitung**
+
+[Thomas Skerbis](https://github.com/skerbis)
+
+**Danksagungen**
+
+Dank an:
+
+Vorbild für Overlay und Bedienung: das MediaPlace-Addon
+
+URL-Auflösung: die Teams hinter dem url-Addon und virtual_urls
+
+## Lizenz
+
+MIT-Lizenz, siehe [LICENSE](LICENSE)
