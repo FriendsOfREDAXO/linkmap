@@ -525,6 +525,14 @@
                 if (state.sourceView) loadContainer(state.sourceView.query, state.sourceView.page + 1, true);
                 return;
             }
+            var pickCat = e.target.closest('[data-action="pick-category"]');
+            if (pickCat) {
+                e.preventDefault();
+                e.stopPropagation();
+                var catRow = pickCat.closest('.lm-row-category');
+                if (catRow) pickCategory(catRow);
+                return;
+            }
             var row = e.target.closest('.lm-row');
             if (!row) return;
             e.preventDefault();
@@ -548,6 +556,7 @@
             else if (e.key === ' ' && state.multiple) {
                 e.preventDefault();
                 var row = state.rows[state.activeIndex];
+                if (row && row.classList.contains('lm-row-category')) { pickCategory(row); return; }
                 var picked = row ? (row.classList.contains('lm-row-dataset') ? datasetCache[row.getAttribute('data-link')] : rowArticle(row)) : null;
                 if (picked) toggleSelected(picked);
             } else if (e.key === 'Backspace') {
@@ -975,8 +984,13 @@
         '</div>';
     }
 
+    // Kategorie direkt als Ziel uebernehmen (= ihr Startartikel, gleiche ID),
+    // ohne sie erst zu oeffnen -- Button neben dem Pfeil.
     function categoryRowHtml(cat) {
-        return '<div class="lm-row lm-row-category' + (cat.online ? '' : ' lm-offline') + '" data-id="' + cat.id + '" role="option">' +
+        var pickable = !!state.callback;
+        var selected = pickable && state.multiple && isSelected(cat.id);
+        return '<div class="lm-row lm-row-category' + (cat.online ? '' : ' lm-offline') + (selected ? ' lm-selected' : '') + '" data-id="' + cat.id + '" role="option" aria-selected="' + (selected ? 'true' : 'false') + '">' +
+            (state.multiple ? '<span class="lm-check lm-check-category" data-action="pick-category" title="' + esc(t('linkmap_pick_category')) + '"><i class="fa-solid fa-check"></i></span>' : '') +
             '<i class="lm-row-icon fa-solid fa-folder"></i>' +
             '<div class="lm-row-main">' +
                 '<div class="lm-row-title"><span class="lm-row-name">' + esc(cat.name) + '</span><span class="lm-id">' + cat.id + '</span>' +
@@ -984,13 +998,39 @@
                 '</div>' +
                 '<div class="lm-row-meta">' + statusHtml(cat, 'category') + '</div>' +
             '</div>' +
-            '<div class="lm-row-actions"><span class="lm-row-action"><i class="fa-solid fa-chevron-right"></i></span></div>' +
+            '<div class="lm-row-actions">' +
+                (pickable && !state.multiple ? '<button type="button" class="lm-row-action lm-row-pick lm-row-pick-category" data-action="pick-category" title="' + esc(t('linkmap_pick_category')) + '"><i class="fa-solid fa-check"></i></button>' : '') +
+                '<span class="lm-row-action lm-row-open" title="' + esc(t('linkmap_open_category_hint')) + '"><i class="fa-solid fa-chevron-right"></i></span>' +
+            '</div>' +
         '</div>';
+    }
+
+    // Kategorie als artikel-aehnliches Item (Startartikel hat dieselbe ID)
+    function categoryAsItem(cat) {
+        return {
+            id: cat.id, name: cat.name, label: cat.label || cat.name, link: 'redaxo://' + cat.id,
+            online: cat.online, status: cat.status, startarticle: true, sitestart: false, hasTemplate: true,
+            categoryId: cat.id, parentId: cat.parentId, clang: cat.clang, domain: cat.domain, path: cat.path || [],
+            source: 'article'
+        };
+    }
+
+    function pickCategory(row) {
+        var cat = categoryCache[row.getAttribute('data-id')];
+        if (!cat || !state.callback) return;
+        var item = categoryAsItem(cat);
+        articleCache[item.clang + ':' + item.id] = item;
+        if (state.multiple) {
+            toggleSelected(item);
+            return;
+        }
+        finishSingle(item.link, item.label, item);
     }
 
     function renderCategoryList(data) {
         var categories = (data.categories || []).filter(passesFilters);
         var articles = (data.articles || []).filter(passesFilters);
+        cacheCategories(categories);
         var html = '';
         if (categories.length) {
             html += '<div class="lm-group-label">' + esc(t('linkmap_categories')) + ' <span class="lm-group-count">' + categories.length + '</span></div>' +
@@ -1023,8 +1063,12 @@
     }
 
     var articleCache = {};
+    var categoryCache = {};
     function cacheArticles(list) {
         list.forEach(function (a) { articleCache[a.clang + ':' + a.id] = a; });
+    }
+    function cacheCategories(list) {
+        list.forEach(function (c) { categoryCache[c.id] = c; });
     }
     function rowArticle(row) {
         if (!row.classList.contains('lm-row-article')) return null;
@@ -1311,8 +1355,8 @@
         state.selected.forEach(function (a, i) { if (a.link === item.link) index = i; });
         if (index >= 0) state.selected.splice(index, 1);
         else state.selected.push(item);
-        qsa('.lm-row-article[data-id="' + item.id + '"], .lm-row-dataset[data-link="' + item.link + '"]', els.list).forEach(function (row) {
-            if (row.classList.contains('lm-row-article') && item.link !== 'redaxo://' + item.id) return;
+        qsa('.lm-row-article[data-id="' + item.id + '"], .lm-row-category[data-id="' + item.id + '"], .lm-row-dataset[data-link="' + item.link + '"]', els.list).forEach(function (row) {
+            if (!row.classList.contains('lm-row-dataset') && item.link !== 'redaxo://' + item.id) return;
             row.classList.toggle('lm-selected', index < 0);
             row.setAttribute('aria-selected', index < 0 ? 'true' : 'false');
         });

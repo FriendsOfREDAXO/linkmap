@@ -49,7 +49,7 @@ Zwei Stolperfallen aus der Praxis: Ein url-Addon-Profil „für alle Sprachen“
 | --- | --- |
 | Kopfzeile | Domain-Filter (mit yrewrite und mindestens zwei Domains), Sprachwahl, Suche nach Name oder ID, Vollbild |
 | Sidebar | Struktur mit Live-Filter nach Name, ID oder Domain, Favoriten (Stern an einer Kategorie), Datensätze (freigegebene YForm-Tabellen), Zuletzt bearbeitet |
-| Inhalt | Unterkategorien und Artikel der Kategorie mit ID, Status und Änderungsdatum, Suchergebnisse mit Pfad. Datensätze als sortierbare Tabelle mit „Neuer Datensatz“ und „Datensatz bearbeiten“ |
+| Inhalt | Unterkategorien und Artikel der Kategorie mit ID, Status und Änderungsdatum; eine Kategorie lässt sich über den Haken neben dem Pfeil direkt auswählen (verlinkt ihren Startartikel), ohne sie zu öffnen. Suchergebnisse mit Pfad. Datensätze als sortierbare Tabelle mit „Neuer Datensatz“ und „Datensatz bearbeiten“ |
 | Fußzeile | „Nur Online anzeigen“, bei Mehrfachauswahl Zähler und Übernehmen |
 
 Startartikel und Startseite haben eigene Icons und Farben. Status-Erweiterungen wie „gesperrt“ aus dem accessdenied-Addon werden mit Label und Icon angezeigt.

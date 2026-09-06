@@ -507,6 +507,10 @@ html.lm-scroll-lock { overflow: hidden; }
     cursor: pointer;
 }
 #lm-overlay .lm-row-pick { opacity: 0; color: var(--lm-btn-primary-bg); }
+#lm-overlay button.lm-row-pick-category { border: 1px solid var(--lm-btn-primary-bg); border-radius: 3px; width: 26px; height: 26px; }
+#lm-overlay button.lm-row-pick-category:hover { background: var(--lm-btn-primary-bg); color: #fff; }
+#lm-overlay .lm-check-category { cursor: pointer; }
+#lm-overlay .lm-row-category .lm-row-open { color: var(--lm-muted); }
 #lm-overlay .lm-row:hover .lm-row-pick,
 #lm-overlay .lm-row.lm-active .lm-row-pick { opacity: 1; }
 

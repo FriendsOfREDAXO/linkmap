@@ -171,3 +171,5 @@ linkmap_demo_resolver_template = URL template /redaxo-news/{id} only – simple 
 linkmap_demo_tableset_item_resolver = a URL resolution of your choice (see below); profiles only route their own triggers or namespaces to the start and 404 article
 linkmap_demo_scheme_hint_url = The table has two url addon profiles. Picking a single dataset therefore shows the "Choose URL scheme" dialog with preview URLs; multi select and relation mode choose the scheme automatically at render time.
 linkmap_tables_schemes_hint = Only checked schemes are offered in the picker and used at render time; none checked = all.
+linkmap_pick_category = Select category (links its start article)
+linkmap_open_category_hint = Open category
