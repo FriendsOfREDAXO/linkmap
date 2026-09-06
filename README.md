@@ -120,7 +120,7 @@ if (window.rex5LinkmapBridge && rex5LinkmapBridge.isActive()) {
 <input class="lm-widget" name="category" data-lm-categories="true" data-lm-format="link" value="redaxo://5">
 ```
 
-Im Kategorie-Picker öffnet ein Klick nur Kategorien mit Unterkategorien; Kategorien ohne Unterkategorien werden direkt ausgewählt. Der Kategorie-Picker speichert wahlweise die ID (Default, wie REX_LINK) oder mit `data-lm-format="link"` den Link `redaxo://ID`; beim YForm-Werttyp entsprechend „Nur Kategorien“ plus Speicherformat.
+Im Kategorie-Picker navigieren Klick und Baum wie gewohnt; unten übernimmt „Kategorie übernehmen: …“ die gerade geöffnete Kategorie, der Haken in der Liste wählt eine Kategorie direkt. Der Kategorie-Picker speichert wahlweise die ID (Default, wie REX_LINK) oder mit `data-lm-format="link"` den Link `redaxo://ID`; beim YForm-Werttyp entsprechend „Nur Kategorien“ plus Speicherformat.
 
 Der Input bleibt im Formular (als `hidden`) und löst `change` sowie `rex:change` aus. Attribute: `data-lm-multiple`, `data-lm-max`, `data-lm-clang`, `data-lm-category`, `data-lm-domain`, `data-lm-format="link"`, `data-lm-sources`, `data-lm-table`, `data-lm-categories`. Auf pjax-Seiten initialisiert `rex:ready` nach, manuell per `LMWidget.init(container)`.
 

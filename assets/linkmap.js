@@ -62,7 +62,8 @@
         sourceView: null,
         locked: false,
         extraContainer: null,
-        categoriesOnly: false
+        categoriesOnly: false,
+        currentCategory: null
     };
 
     var els = {};
@@ -450,7 +451,17 @@
             refreshView();
         });
 
-        els.apply.addEventListener('click', function () { applyMultiple(); });
+        els.apply.addEventListener('click', function () {
+            if (state.categoriesOnly && state.callback && !state.multiple) {
+                if (state.currentCategory) {
+                    var item = categoryAsItem(state.currentCategory);
+                    articleCache[item.clang + ':' + item.id] = item;
+                    finishSingle(item.link, item.label, item);
+                }
+                return;
+            }
+            applyMultiple();
+        });
 
         // Delegation: Sidebar
         els.sidebar.addEventListener('click', function (e) {
@@ -673,7 +684,7 @@
         els.modal.classList.toggle('lm-mode-multiple', state.multiple);
         els.modal.classList.toggle('lm-mode-browse', state.browseOnly);
         els.modal.classList.toggle('lm-mode-pick', !!state.callback);
-        els.apply.hidden = !state.multiple;
+        els.apply.hidden = !state.multiple && !(state.categoriesOnly && state.callback);
         els.selCount.hidden = !state.multiple;
         updateSelectionUi();
 
@@ -781,6 +792,7 @@
 
     function openCategory(categoryId) {
         state.categoryId = categoryId || 0;
+        state.currentCategory = null;
         state.view = 'category';
         state.sourceView = null;
         highlightSource(null, null);
@@ -791,9 +803,11 @@
         api(config.urls.articles, { category_id: state.categoryId, clang: state.clang }).then(function (data) {
             if (seq !== state.requestSeq) return;
             state.categoryId = data.categoryId;
+            state.currentCategory = data.category || null;
             highlightTree(state.categoryId);
             renderBreadcrumb(data.breadcrumb || []);
             renderCategoryList(data);
+            updateSelectionUi();
         }).catch(function (err) {
             if (seq !== state.requestSeq) return;
             els.list.innerHTML = '<div class="lm-error">' + esc(err.message || t('linkmap_error')) + '</div>';
@@ -1343,10 +1357,6 @@
         row = row || state.rows[state.activeIndex];
         if (!row) return;
         if (row.classList.contains('lm-row-category')) {
-            if (row.classList.contains('lm-row-leaf') && state.callback) {
-                pickCategory(row);
-                return;
-            }
             openCategory(parseInt(row.getAttribute('data-id'), 10));
             return;
         }
@@ -1383,7 +1393,16 @@
     }
 
     function updateSelectionUi() {
+        if (state.categoriesOnly && state.callback && !state.multiple) {
+            // Kategorie-Picker: "Uebernehmen" nimmt die gerade geoeffnete Kategorie
+            // (auch per Baum angesteuert); auf der Hauptebene gibt es nichts zu waehlen.
+            var cat = state.currentCategory;
+            els.apply.disabled = !cat;
+            els.apply.innerHTML = '<i class="fa-solid fa-check"></i> ' + esc(cat ? t('linkmap_apply_category', { name: cat.name }) : t('linkmap_apply'));
+            return;
+        }
         if (!state.multiple) return;
+        els.apply.innerHTML = '<i class="fa-solid fa-check"></i> ' + esc(t('linkmap_apply'));
         els.selCount.textContent = t('linkmap_selected_count', { count: state.selected.length });
         els.apply.disabled = state.selected.length === 0;
     }
