@@ -1,0 +1,44 @@
+package: linkmap
+version: '1.0.0'
+author: FriendsOfREDAXO
+supportpage: https://github.com/FriendsOfREDAXO/linkmap
+
+# KEIN "page:"-Block und kein eigener Menuepunkt: der Hauptseiten-Schluessel
+# waere automatisch der Paketname "linkmap" -- genau so heisst bereits die
+# versteckte Popup-Seite des structure-Addons (structure/package.yml,
+# pages: linkmap), die wir per PAGES_PREPARED uebernehmen. Die Verwaltung
+# haengt deshalb wie accessdenied/activity_log als Unterseite unter "System"
+# (Dateien: pages/system.linkmap.<subpage>.php).
+pages:
+    system/linkmap:
+        title: 'Linkmap'
+        icon: rex-icon fa-link
+        perm: admin
+        subpages:
+            settings:
+                title: 'translate:linkmap_settings'
+                icon: rex-icon fa-gear
+                perm: admin
+            demo:
+                title: 'translate:linkmap_demo'
+                icon: rex-icon fa-play
+                perm: admin
+            help:
+                title: 'translate:linkmap_help'
+                subPath: README.md
+                itemClass: 'pull-right'
+                perm: admin
+
+requires:
+    redaxo: '>=5.15'
+    php:
+        version: '>=8.2'
+    packages:
+        structure: '^2.11'
+
+default_config:
+    replace_classic_linkmap: true
+    history_limit: 15
+    search_limit: 50
+    resolve_yform_links: true
+    resolve_legacy_links: false

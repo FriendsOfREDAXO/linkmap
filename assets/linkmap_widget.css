@@ -1,0 +1,68 @@
+/* Linkmap – Widget (<input class="lm-widget">), Tokens aus linkmap.css */
+
+.lm-w {
+    border: 1px solid var(--lm-border, #dfe3e9);
+    border-radius: 4px;
+    background: var(--lm-modal-bg, #fff);
+    color: var(--lm-text, #324050);
+    font-size: 13px;
+}
+.lm-w * { box-sizing: border-box; }
+.lm-w-body { padding: 4px; }
+.lm-w-empty { padding: 8px 10px; color: var(--lm-muted, #68727d); font-style: italic; }
+.lm-w-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 3px;
+}
+.lm-w-item + .lm-w-item { border-top: 1px solid var(--lm-border, #dfe3e9); }
+.lm-w-item:hover { background: var(--lm-sidebar-bg, #f3f6fb); }
+.lm-w-icon { width: 18px; text-align: center; color: var(--lm-muted, #68727d); font-size: 15px; flex-shrink: 0; }
+.lm-w-icon.lm-icon-start { color: var(--lm-startarticle, #4b9ad9); }
+.lm-w-icon.lm-icon-sitestart { color: var(--lm-sitestart, #1e7e34); }
+.lm-w-main { flex: 1; min-width: 0; }
+.lm-w-title { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.lm-w-name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.lm-w-offline .lm-w-name,
+.lm-w-unknown .lm-w-name { color: var(--lm-muted, #68727d); font-style: italic; font-weight: 500; }
+.lm-w-id {
+    display: inline-block;
+    padding: 0 5px;
+    border-radius: 3px;
+    background: var(--lm-badge-bg, #dfe3e9);
+    color: var(--lm-badge-text, #324050);
+    font-size: 10px;
+    line-height: 16px;
+}
+.lm-w-domain {
+    display: inline-block;
+    padding: 0 5px;
+    border-radius: 3px;
+    background: var(--lm-domain-bg, #dbedf7);
+    color: var(--lm-domain-text, #2f6ea8);
+    font-size: 10px;
+    line-height: 16px;
+}
+.lm-w-meta { font-size: 11px; color: var(--lm-muted, #68727d); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lm-w-actions { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.lm-w-btn {
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-radius: 3px;
+    background: transparent;
+    color: var(--lm-muted, #68727d);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+}
+.lm-w-btn:hover { background: var(--lm-active-bg, #dbedf7); color: var(--lm-link, #2f6ea8); }
+.lm-w-btn:disabled { opacity: 0.35; cursor: default; }
+.lm-w-footer { padding: 4px 8px 8px; }
+.lm-w-single .lm-w-footer { padding-top: 0; }
+.lm-w-single .lm-w-empty + .lm-w-footer { padding-top: 4px; }
