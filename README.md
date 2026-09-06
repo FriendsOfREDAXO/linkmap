@@ -83,6 +83,9 @@ LM.open();
 // Datensätze freischalten -- nur wenn der Wert ein Link-String sein darf
 LM.open(callback, { sources: 'all' });          // oder ['article', 'yform']
 
+// Kategorie-Picker: nur Kategorien, Ergebnis ist der Startartikel (redaxo://<Kategorie-ID>)
+LM.open(callback, { categoriesOnly: true });      // oder rex5LinkmapBridge.pickCategory(callback)
+
 // Relation-Modus: eine feste Tabelle, keine Struktur, Ergebnis ist der Datensatz
 LM.open(callback, { sources: ['yform'], container: { source: 'yform', id: 'rex_news', label: 'News' }, lockContainer: true });
 
@@ -113,9 +116,10 @@ if (window.rex5LinkmapBridge && rex5LinkmapBridge.isActive()) {
 <input class="lm-widget" name="links" data-lm-multiple="true" data-lm-max="5" value="12,15">
 <input class="lm-widget" name="targets" data-lm-format="link" data-lm-sources="all" value="redaxo://12,yform://rex_news/3">
 <input class="lm-widget" name="ref" data-lm-table="rex_news" data-lm-multiple="true" value="3,7">
+<input class="lm-widget" name="category" data-lm-categories="true" value="5">
 ```
 
-Der Input bleibt im Formular (als `hidden`) und löst `change` sowie `rex:change` aus. Attribute: `data-lm-multiple`, `data-lm-max`, `data-lm-clang`, `data-lm-category`, `data-lm-domain`, `data-lm-format="link"`, `data-lm-sources`, `data-lm-table`. Auf pjax-Seiten initialisiert `rex:ready` nach, manuell per `LMWidget.init(container)`.
+Der Input bleibt im Formular (als `hidden`) und löst `change` sowie `rex:change` aus. Attribute: `data-lm-multiple`, `data-lm-max`, `data-lm-clang`, `data-lm-category`, `data-lm-domain`, `data-lm-format="link"`, `data-lm-sources`, `data-lm-table`, `data-lm-categories`. Auf pjax-Seiten initialisiert `rex:ready` nach, manuell per `LMWidget.init(container)`.
 
 Dasselbe aus PHP, empfohlen für Addons:
 
@@ -126,13 +130,14 @@ echo Widget::render('link', $value);
 echo Widget::render('links', $value, ['multiple' => true, 'max' => 5, 'category' => 5, 'domain' => 'example.org']);
 echo Widget::render('targets', $value, ['multiple' => true, 'format' => 'link', 'sources' => 'all']);
 echo Widget::render('ref', $value, ['table' => 'rex_news', 'multiple' => true]);
+echo Widget::render('category', $value, ['categories' => true]);
 ```
 
 ### YForm
 
 Zwei Werttypen, im Table Manager unter „Wert“:
 
-- **linkmap**: Artikel, optional Datensätze. Speicherformat ID (wie be_link) oder Link. Parameter: name, label, multiple, max, category, domain, default, notice, format (`id`|`link`), sources.
+- **linkmap**: Artikel, optional Datensätze. Speicherformat ID (wie be_link) oder Link. Parameter: name, label, multiple, max, category, domain, default, notice, format (`id`|`link`), sources, categories (nur Kategorien).
 - **linkmap_relation**: Datensätze einer festen Tabelle, Speicherformat ID (wie be_manager_relation). Parameter: name, label, table, multiple, max, default, notice.
 
 ```php

@@ -25,6 +25,9 @@ use function is_array;
  * format=link speichert Links ("redaxo://12", "yform://rex_news/3") statt
  * IDs -- nur damit sind Datensatz-Quellen (sources) moeglich.
  *
+ * categories=true schaltet den Kategorie-Picker: nur Kategorien waehlbar,
+ * Wert = ID des Startartikels (identisch mit der Kategorie-ID).
+ *
  * table=<yform-tabelle> schaltet den Relation-Modus: nur Datensaetze dieser
  * Tabelle, Wert = Datensatz-ID(s), keine Struktur, keine URL-Aufloesung
  * noetig (wie be_manager_relation, nur mit dem Overlay).
@@ -32,7 +35,7 @@ use function is_array;
 final class Widget
 {
     /**
-     * @param array{multiple?: bool, max?: int, category?: int, clang?: int, domain?: string, format?: string, sources?: string|list<string>, table?: string, id?: string, class?: string, attributes?: array<string, string|int>} $options
+     * @param array{multiple?: bool, max?: int, category?: int, clang?: int, domain?: string, format?: string, sources?: string|list<string>, table?: string, categories?: bool, id?: string, class?: string, attributes?: array<string, string|int>} $options
      */
     public static function render(string $name, string|int|null $value, array $options = []): string
     {
@@ -45,6 +48,9 @@ final class Widget
                 ? self::normalizeLinks($value, (bool) ($options['multiple'] ?? false))
                 : self::normalizeValue($value, (bool) ($options['multiple'] ?? false)),
         ];
+        if (!empty($options['categories']) && '' === $table) {
+            $attributes['data-lm-categories'] = 'true';
+        }
         if ('' !== $table) {
             $attributes['data-lm-table'] = $table;
             $yformTable = class_exists(rex_yform_manager_table::class) ? rex_yform_manager_table::get($table) : null;

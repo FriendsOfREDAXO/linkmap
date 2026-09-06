@@ -17,6 +17,8 @@
  *                                Nur so sind Datensatz-Quellen moeglich.
  *   data-lm-sources="all"     → erlaubte Quellen (all oder Liste "article,yform"),
  *                                nur im Link-Format wirksam; Default: article
+ *   data-lm-categories="true" → Kategorie-Picker: nur Kategorien, Wert = ID
+ *                                des Startartikels (= Kategorie-ID)
  *   data-lm-table="rex_news"  → Relation-Modus: nur Datensaetze dieser YForm-
  *                                Tabelle, Wert = Datensatz-ID(s), keine Struktur.
  *                                Optional data-lm-table-label fuer die Anzeige.
@@ -130,6 +132,7 @@
         this.table = (input.getAttribute('data-lm-table') || '').trim();
         this.tableLabel = input.getAttribute('data-lm-table-label') || this.table;
         this.relation = this.table !== '';
+        this.categoriesOnly = !this.relation && input.getAttribute('data-lm-categories') === 'true';
         this.linkFormat = !this.relation && input.getAttribute('data-lm-format') === 'link';
         var sourcesAttr = (input.getAttribute('data-lm-sources') || '').trim();
         this.sources = !this.linkFormat ? ['article'] : (sourcesAttr === 'all' ? 'all' : (sourcesAttr ? sourcesAttr.split(',').map(function (v) { return v.trim(); }).filter(Boolean) : ['article']));
@@ -233,17 +236,20 @@
         var full = this.multiple && this.max > 0 && ids.length >= this.max;
         var label = this.relation
             ? (this.multiple ? t('linkmap_widget_add_dataset') : t('linkmap_widget_open_dataset'))
-            : (this.multiple ? t('linkmap_widget_add') : t('linkmap_widget_open'));
+            : (this.categoriesOnly
+                ? (this.multiple ? t('linkmap_widget_add_category') : t('linkmap_widget_open_category'))
+                : (this.multiple ? t('linkmap_widget_add') : t('linkmap_widget_open')));
         var showOpen = this.multiple || !ids.length;
         this.footer.innerHTML = showOpen
             ? '<button type="button" class="btn btn-default btn-xs lm-w-open" data-action="open"' + (full ? ' disabled' : '') + '><i class="fa-solid fa-link"></i> ' + esc(label) + '</button>'
-            : '<button type="button" class="btn btn-default btn-xs lm-w-open" data-action="open"><i class="fa-solid fa-arrows-rotate"></i> ' + esc(this.relation ? t('linkmap_widget_open_dataset') : t('linkmap_widget_open')) + '</button>';
+            : '<button type="button" class="btn btn-default btn-xs lm-w-open" data-action="open"><i class="fa-solid fa-arrows-rotate"></i> ' + esc(this.relation ? t('linkmap_widget_open_dataset') : (this.categoriesOnly ? t('linkmap_widget_open_category') : t('linkmap_widget_open'))) + '</button>';
     };
 
     Widget.prototype.open = function () {
         if (!window.LM) return;
         var self = this;
         var options = { multiple: this.multiple, sources: this.sources };
+        if (this.categoriesOnly) options.categoriesOnly = true;
         if (this.relation) {
             options.sources = ['yform'];
             options.container = { source: 'yform', id: this.table, label: this.tableLabel };

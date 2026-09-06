@@ -206,6 +206,12 @@
         browse: function (options) {
             window.LM.open(null, options || {});
         },
+        // Kategorie waehlen (Ergebnis: Startartikel der Kategorie, redaxo://ID)
+        pickCategory: function (onSelect, options) {
+            options = options || {};
+            options.categoriesOnly = true;
+            window.LM.open(onSelect, options);
+        },
         // Datensatz einer YForm-Tabelle waehlen: onSelect(link, name, item) mit
         // link = "yform://tabelle/id[?scheme=...]". Ersetzt die bisherigen
         // rex_yform_manager_opener-Popups von CKE5/TinyMCE/MForm/Builder.

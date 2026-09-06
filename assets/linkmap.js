@@ -21,7 +21,9 @@
  *          container ({ source, id, label }: direkt in diesem Container oeffnen),
  *          lockContainer (true: nur dieser Container, keine Struktur/Sidebar --
  *          Relation-Modus, Ergebnis wird als Datensatz-ID gespeichert; der
- *          Container muss dafuer nicht als Quelle freigegeben sein)
+ *          Container muss dafuer nicht als Quelle freigegeben sein),
+ *          categoriesOnly (true: Kategorie-Picker -- nur Kategorien in Liste
+ *          und Suche, Ergebnis ist der Startartikel der Kategorie)
  *
  * Datensatz-Quellen (config.sources, siehe lib/Source) liefern Links wie
  * yform://tabelle/id; Aufrufer, die nur Artikel-IDs speichern (REX_LINK),
@@ -59,7 +61,8 @@
         allowedSources: ['article'],
         sourceView: null,
         locked: false,
-        extraContainer: null
+        extraContainer: null,
+        categoriesOnly: false
     };
 
     var els = {};
@@ -638,6 +641,9 @@
         state.extraContainer = state.locked ? { source: options.container.source, id: options.container.id, label: options.container.label || options.container.id } : null;
         els.modal.classList.toggle('lm-mode-locked', state.locked);
         if (els.domain) els.domain.hidden = state.locked;
+        state.categoriesOnly = !!options.categoriesOnly && !state.locked;
+        els.modal.classList.toggle('lm-mode-categories', state.categoriesOnly);
+        if (state.categoriesOnly) options.sources = ['article'];
         state.allowedSources = options.sources === 'all'
             ? ['article'].concat((config.sources || []).map(function (src) { return src.id; }))
             : (Array.isArray(options.sources) && options.sources.length ? options.sources : ['article']);
@@ -671,7 +677,7 @@
         els.selCount.hidden = !state.multiple;
         updateSelectionUi();
 
-        els.historySection.hidden = !config.canHistory;
+        els.historySection.hidden = !config.canHistory || state.categoriesOnly;
 
         // Scrollposition der darunterliegenden Seite merken -- das
         // Scroll-Lock auf <body> darf sie nicht verlieren (lange Modulformulare).
@@ -778,7 +784,7 @@
         state.view = 'category';
         state.sourceView = null;
         highlightSource(null, null);
-        els.search.placeholder = t('linkmap_search_placeholder');
+        els.search.placeholder = t(state.categoriesOnly ? 'linkmap_search_categories_placeholder' : 'linkmap_search_placeholder');
         var seq = ++state.requestSeq;
         els.list.innerHTML = '<div class="lm-muted lm-list-loading">' + esc(t('linkmap_loading')) + '</div>';
         highlightTree(state.categoryId);
@@ -1029,25 +1035,31 @@
 
     function renderCategoryList(data) {
         var categories = (data.categories || []).filter(passesFilters);
-        var articles = (data.articles || []).filter(passesFilters);
+        var articles = state.categoriesOnly ? [] : (data.articles || []).filter(passesFilters);
         cacheCategories(categories);
         var html = '';
         if (categories.length) {
             html += '<div class="lm-group-label">' + esc(t('linkmap_categories')) + ' <span class="lm-group-count">' + categories.length + '</span></div>' +
                 categories.map(categoryRowHtml).join('');
         }
-        html += '<div class="lm-group-label">' + esc(t('linkmap_articles')) + ' <span class="lm-group-count">' + articles.length + '</span></div>';
-        html += articles.length ? articles.map(function (a) { return articleRowHtml(a, false); }).join('')
-            : '<div class="lm-muted lm-empty">' + esc(t('linkmap_no_articles')) + '</div>';
+        if (state.categoriesOnly) {
+            if (!categories.length) html += '<div class="lm-muted lm-empty">' + esc(t('linkmap_no_categories')) + '</div>';
+        } else {
+            html += '<div class="lm-group-label">' + esc(t('linkmap_articles')) + ' <span class="lm-group-count">' + articles.length + '</span></div>';
+            html += articles.length ? articles.map(function (a) { return articleRowHtml(a, false); }).join('')
+                : '<div class="lm-muted lm-empty">' + esc(t('linkmap_no_articles')) + '</div>';
+        }
         els.list.innerHTML = html;
         state.rows = qsa('.lm-row', els.list);
         state.activeIndex = -1;
-        els.status.textContent = t('linkmap_count_categories', { count: categories.length }) + ' · ' + t('linkmap_count_articles', { count: articles.length });
+        els.status.textContent = state.categoriesOnly
+            ? t('linkmap_count_categories', { count: categories.length })
+            : t('linkmap_count_categories', { count: categories.length }) + ' · ' + t('linkmap_count_articles', { count: articles.length });
         cacheArticles(articles);
     }
 
     function renderSearchResults(data) {
-        var articles = (data.articles || []).filter(function (a) { return !state.hideOffline || a.online; });
+        var articles = (data.articles || []).filter(function (a) { return (!state.hideOffline || a.online) && (!state.categoriesOnly || a.startarticle); });
         var html = '';
         if (!articles.length) {
             html = '<div class="lm-muted lm-empty">' + esc(t('linkmap_no_results')) + '</div>';

@@ -12,6 +12,7 @@ $category = (int) $this->getElement('category');
 $domain = trim((string) $this->getElement('domain'));
 $format = 'link' === (string) $this->getElement('format') ? 'link' : 'id';
 $sources = trim((string) $this->getElement('sources'));
+$categories = '1' == $this->getElement('categories');
 
 $class_group = trim('form-group ' . $this->getHTMLClass() . ' ' . $this->getWarningClass());
 
@@ -35,6 +36,7 @@ $notice = count($notice) > 0 ? '<p class="help-block small">' . implode('<br />'
         'domain' => $domain,
         'format' => $format,
         'sources' => '' !== $sources ? $sources : 'article',
+        'categories' => $categories,
     ]) ?>
     <?= $notice ?>
 </div>

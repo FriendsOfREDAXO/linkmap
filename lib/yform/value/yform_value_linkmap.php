@@ -84,6 +84,7 @@ class rex_yform_value_linkmap extends rex_yform_value_abstract
                 'notice' => ['type' => 'text', 'label' => rex_i18n::msg('yform_values_defaults_notice')],
                 'format' => ['type' => 'choice', 'label' => rex_i18n::msg('linkmap_yform_format'), 'choices' => ['id' => rex_i18n::msg('linkmap_yform_format_id'), 'link' => rex_i18n::msg('linkmap_yform_format_link')], 'default' => 'id', 'notice' => rex_i18n::msg('linkmap_yform_format_notice')],
                 'sources' => ['type' => 'text', 'label' => rex_i18n::msg('linkmap_yform_sources'), 'notice' => rex_i18n::msg('linkmap_yform_sources_notice')],
+                'categories' => ['type' => 'checkbox', 'label' => rex_i18n::msg('linkmap_yform_categories')],
             ],
             'description' => rex_i18n::msg('linkmap_yform_description'),
             'formbuilder' => false,

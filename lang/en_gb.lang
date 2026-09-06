@@ -173,3 +173,9 @@ linkmap_demo_scheme_hint_url = The table has two url addon profiles. Picking a s
 linkmap_tables_schemes_hint = Only checked schemes are offered in the picker and used at render time; none checked = all.
 linkmap_pick_category = Select category (links its start article)
 linkmap_open_category_hint = Open category
+linkmap_search_categories_placeholder = Search categories (name or ID) …
+linkmap_no_categories = No subcategories.
+linkmap_widget_open_category = Select category
+linkmap_widget_add_category = Add category
+linkmap_yform_categories = Categories only (category picker, value = start article ID)
+linkmap_demo_widget_categories = Category picker (categories only, value = start article ID)
