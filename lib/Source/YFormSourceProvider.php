@@ -4,21 +4,27 @@ namespace FriendsOfRedaxo\Linkmap\Source;
 
 use FriendsOfRedaxo\Linkmap\Link\LinkResolver;
 use FriendsOfRedaxo\Linkmap\TableConfig;
+use IntlDateFormatter;
 use rex;
 use rex_addon;
 use rex_csrf_token;
+use rex_formatter;
 use rex_i18n;
 use rex_sql;
+use rex_sql_table;
 use rex_url;
 use rex_yform_manager_dataset;
+use rex_yform_manager_field;
 use rex_yform_manager_query;
 use rex_yform_manager_table;
 use rex_yform_manager_table_perm_edit;
 use rex_yform_manager_table_perm_view;
+use Throwable;
 
 use function count;
 use function in_array;
 use function is_string;
+use function method_exists;
 
 /**
  * YForm-Tabellen als Datensatz-Quelle. Welche Tabellen und wie (Label,
@@ -148,7 +154,7 @@ final class YFormSourceProvider implements SourceProviderInterface
         foreach ($q->find() as $dataset) {
             if ($dataset instanceof rex_yform_manager_dataset) {
                 $item = $this->item($dataset, $table, $config, $columns);
-                $item['cells'] = $this->cells($dataset, $listColumns);
+                $item['cells'] = $this->cells($dataset, $table, $listColumns);
                 // Moegliche URLs je Datensatz (Schema-Label + URL) fuer die
                 // Link-Spalte: Badge zeigt die Art, Tooltip die URLs.
                 $item['urls'] = $linkable ? LinkResolver::candidates($container, $dataset->getId(), $clang) : [];
@@ -274,21 +280,110 @@ final class YFormSourceProvider implements SourceProviderInterface
     }
 
     /**
+     * Zellen der Listenansicht: Werte werden wie in der YForm-Datenliste
+     * aufgeloest (Relationen, Auswahlfelder, be_link ...), Datumsangaben in
+     * der Kurzform der Backend-Sprache. Sortiert wird weiterhin die Rohspalte.
+     *
      * @param list<array{key: string, label: string, sortable: bool}> $listColumns
      * @return array<string, string>
      */
-    private function cells(rex_yform_manager_dataset $dataset, array $listColumns): array
+    private function cells(rex_yform_manager_dataset $dataset, rex_yform_manager_table $table, array $listColumns): array
     {
         $cells = [];
         foreach ($listColumns as $column) {
             if ('label' === $column['key']) {
                 continue;
             }
-            $value = $dataset->getValue($column['key']);
-            $value = is_scalar($value) ? trim(strip_tags((string) $value)) : '';
+            $value = $this->displayValue($dataset, $table, $column['key']);
             $cells[$column['key']] = mb_strlen($value) > 60 ? mb_substr($value, 0, 57) . '…' : $value;
         }
         return $cells;
+    }
+
+    /** Anzeigewert einer Spalte (siehe cells()). */
+    private function displayValue(rex_yform_manager_dataset $dataset, rex_yform_manager_table $table, string $key): string
+    {
+        $raw = $dataset->getValue($key);
+        $raw = is_scalar($raw) ? trim((string) $raw) : '';
+        $field = $this->valueField($table, $key);
+        $type = null !== $field ? $field->getTypeName() : $this->sqlDateType($table->getTableName(), $key);
+
+        if (in_array($type, ['date', 'datetime', 'datestamp', 'timestamp'], true)) {
+            return self::formatDate($raw, 'date' === $type);
+        }
+        if ('' === $raw || null === $field) {
+            return strip_tags($raw);
+        }
+
+        $class = 'rex_yform_value_' . $type;
+        if (!class_exists($class) || !method_exists($class, 'getListValue')) {
+            return strip_tags($raw);
+        }
+        // Vertrag wie rex_yform_manager: "list" liefert Werte des Datensatzes
+        // (Relationstabellen, Filter der be_manager_relation).
+        $listProxy = new class($dataset) {
+            public function __construct(private readonly rex_yform_manager_dataset $dataset) {}
+
+            public function getValue(string $key): mixed
+            {
+                return $this->dataset->getValue($key);
+            }
+        };
+        try {
+            /** @var callable(array<string, mixed>): mixed $callback */
+            $callback = [$class, 'getListValue'];
+            $html = (string) $callback([
+                'value' => $raw,
+                'subject' => $raw,
+                'field' => $key,
+                'list' => $listProxy,
+                'params' => ['field' => $field->toArray(), 'fields' => $table->getFields()],
+            ]);
+        } catch (Throwable) {
+            return strip_tags($raw);
+        }
+        $text = trim(strip_tags((string) preg_replace('~<br\s*/?>~i', ', ', $html)));
+        return '' !== $text ? html_entity_decode($text, ENT_QUOTES | ENT_HTML5) : strip_tags($raw);
+    }
+
+    /** Kurzform (IntlDateFormatter::SHORT) in der Sprache des Backend-Users, leere/Null-Daten bleiben leer. */
+    private static function formatDate(string $raw, bool $dateOnly): string
+    {
+        if ('' === $raw || str_starts_with($raw, '0000-00-00') || '0' === $raw) {
+            return '';
+        }
+        return $dateOnly
+            ? rex_formatter::intlDate($raw, IntlDateFormatter::SHORT)
+            : rex_formatter::intlDateTime($raw, [IntlDateFormatter::SHORT, IntlDateFormatter::SHORT]);
+    }
+
+    /** @var array<string, array<string, rex_yform_manager_field>> */
+    private array $valueFieldCache = [];
+
+    private function valueField(rex_yform_manager_table $table, string $key): ?rex_yform_manager_field
+    {
+        $tableName = $table->getTableName();
+        if (!isset($this->valueFieldCache[$tableName])) {
+            $this->valueFieldCache[$tableName] = [];
+            foreach ($table->getValueFields() as $field) {
+                $this->valueFieldCache[$tableName][$field->getName()] = $field;
+            }
+        }
+        return $this->valueFieldCache[$tableName][$key] ?? null;
+    }
+
+    /** SQL-Typ fuer Spalten ohne YForm-Feld (createdate, updatedate ...): 'date', 'datetime', 'timestamp' oder ''. */
+    private function sqlDateType(string $tableName, string $key): string
+    {
+        if ('' === $tableName) {
+            return '';
+        }
+        $column = rex_sql_table::get($tableName)->getColumn($key);
+        if (null === $column) {
+            return '';
+        }
+        $type = strtolower($column->getType());
+        return in_array($type, ['date', 'datetime', 'timestamp'], true) ? $type : '';
     }
 
     public function resolve(string $link, int $clang): ?array
@@ -324,7 +419,7 @@ final class YFormSourceProvider implements SourceProviderInterface
         $meta = [];
         foreach (['updatedate', 'createdate'] as $dateColumn) {
             if (in_array($dateColumn, $columns, true) && '' !== (string) $dataset->getValue($dateColumn)) {
-                $meta[] = (string) $dataset->getValue($dateColumn);
+                $meta[] = self::formatDate((string) $dataset->getValue($dateColumn), false);
                 break;
             }
         }
@@ -386,8 +481,10 @@ final class YFormSourceProvider implements SourceProviderInterface
     {
         $template = trim((string) ($config['label'] ?? ''));
         if ('' !== $template) {
-            $label = preg_replace_callback('~\{([a-z0-9_]+)\}~i', static function (array $m) use ($dataset): string {
-                return $dataset->hasValue($m[1]) ? trim((string) $dataset->getValue($m[1])) : '';
+            $table = $dataset->getTable();
+            // Platzhalter liefern den Anzeigewert (Relation aufgeloest, Datum kurz)
+            $label = preg_replace_callback('~\{([a-z0-9_]+)\}~i', function (array $m) use ($dataset, $table): string {
+                return $dataset->hasValue($m[1]) ? $this->displayValue($dataset, $table, $m[1]) : '';
             }, $template);
             $label = trim((string) $label);
             if ('' !== $label) {

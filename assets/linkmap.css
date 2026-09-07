@@ -592,6 +592,7 @@ html.lm-scroll-lock { overflow: hidden; }
 #lm-overlay .lm-table-wrap { overflow-x: auto; }
 #lm-overlay .lm-table {
     width: 100%;
+    /* min-width setzt fitDatasetTable(), wenn Spalten sonst auf 0 fallen */
     border-collapse: collapse;
     font-size: 13px;
     background: transparent; /* Bootstrap: table { background: #fff } */
@@ -600,7 +601,7 @@ html.lm-scroll-lock { overflow: hidden; }
        die Tabelle zu verbreitern. */
     table-layout: fixed;
 }
-#lm-overlay .lm-table thead th.lm-th-label { width: 42%; }
+#lm-overlay .lm-table thead th.lm-th-label { width: 300px; }
 #lm-overlay .lm-table thead th.lm-th-status { width: 90px; }
 #lm-overlay .lm-table thead th.lm-th-date,
 #lm-overlay .lm-table thead th.lm-th-createdate,

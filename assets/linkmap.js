@@ -1259,6 +1259,22 @@
         return lines.join('\n');
     }
 
+    // table-layout: fixed verteilt nur den Rest auf Spalten ohne Breite --
+    // bei vielen Spalten faellt der auf 0 und die Spalte verschwindet. Dann
+    // bekommt die Tabelle eine Mindestbreite (Rest je 130px) und scrollt
+    // horizontal (.lm-table-wrap).
+    function fitDatasetTable() {
+        var table = qs('.lm-table', els.list);
+        if (!table) return;
+        table.style.minWidth = '';
+        var ths = qsa('thead th', table);
+        var thin = ths.filter(function (th) { return th.offsetWidth < 80 && !/lm-th-(check|pick|edit)/.test(th.className); });
+        if (!thin.length) return;
+        var need = 0;
+        ths.forEach(function (th) { need += thin.indexOf(th) >= 0 ? 130 : th.offsetWidth; });
+        table.style.minWidth = need + 'px';
+    }
+
     function datasetTableHead(columns) {
         var view = state.sourceView || {};
         var html = '<thead><tr>';
@@ -1296,6 +1312,7 @@
             els.list.innerHTML = rowsHtml
                 ? '<div class="lm-table-wrap"><table class="lm-table">' + datasetTableHead(columns) + '<tbody>' + rowsHtml + '</tbody></table></div>' + moreHtml
                 : '<div class="lm-muted lm-empty">' + esc(t('linkmap_no_results')) + '</div>';
+            fitDatasetTable();
         }
         state.rows = qsa('.lm-row', els.list);
         state.activeIndex = -1;

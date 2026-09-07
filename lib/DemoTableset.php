@@ -35,6 +35,8 @@ use function in_array;
 final class DemoTableset
 {
     public const TABLE = 'rex_linkmap_demo';
+    public const CATEGORY_TABLE = 'rex_linkmap_demo_category';
+    public const CATEGORIES = ['Release', 'AddOn', 'Community', 'Tutorial'];
     public const TRIGGERS = ['redaxo-news', 'redaxo-blog'];
     public const URL_NAMESPACES = ['linkmap-demo-news', 'linkmap-demo-blog'];
     public const RESOLVERS = ['vu', 'url', 'template'];
@@ -94,6 +96,27 @@ final class DemoTableset
 
         rex_yform_manager_table_api::importTablesets((string) json_encode([[
             'table' => [
+                'table_name' => self::CATEGORY_TABLE,
+                'name' => 'Linkmap Demo: Rubriken',
+                'description' => 'Rubriken der Demo-Tabelle des Linkmap-Addons (Relation).',
+                'status' => 1,
+                'list_amount' => 30,
+                'list_sortfield' => 'name',
+                'list_sortorder' => 'ASC',
+                'search' => 0,
+                'hidden' => 0,
+                'export' => 1,
+                'import' => 1,
+                'mass_deletion' => 1,
+                'mass_edit' => 0,
+                'history' => 0,
+                'schema_overwrite' => 1,
+            ],
+            'fields' => [
+                ['type_id' => 'value', 'type_name' => 'text', 'name' => 'name', 'label' => 'Rubrik', 'db_type' => 'varchar(191)', 'list_hidden' => 0, 'search' => 1, 'prio' => 1],
+            ],
+        ], [
+            'table' => [
                 'table_name' => self::TABLE,
                 'name' => 'Linkmap Demo: REDAXO-News',
                 'description' => 'Demo-Tabelle des Linkmap-Addons. Kann unter System → Linkmap → Demo wieder entfernt werden.',
@@ -113,19 +136,28 @@ final class DemoTableset
             'fields' => [
                 ['type_id' => 'value', 'type_name' => 'text', 'name' => 'title', 'label' => 'Titel', 'db_type' => 'varchar(191)', 'list_hidden' => 0, 'search' => 1, 'prio' => 1],
                 ['type_id' => 'value', 'type_name' => 'textarea', 'name' => 'teaser', 'label' => 'Teaser', 'db_type' => 'text', 'list_hidden' => 1, 'search' => 1, 'prio' => 2],
-                ['type_id' => 'value', 'type_name' => 'text', 'name' => 'category', 'label' => 'Rubrik', 'db_type' => 'varchar(191)', 'list_hidden' => 0, 'search' => 1, 'prio' => 3],
+                // Relation auf die Rubriken-Tabelle: der Picker zeigt den Namen, nicht die ID
+                ['type_id' => 'value', 'type_name' => 'be_manager_relation', 'name' => 'category', 'label' => 'Rubrik', 'table' => self::CATEGORY_TABLE, 'field' => 'name', 'type' => 0, 'empty_option' => 1, 'db_type' => 'int', 'list_hidden' => 0, 'search' => 0, 'prio' => 3],
                 ['type_id' => 'value', 'type_name' => 'date', 'name' => 'date', 'label' => 'Datum', 'db_type' => 'date', 'list_hidden' => 0, 'search' => 0, 'prio' => 4],
-                ['type_id' => 'value', 'type_name' => 'choice', 'name' => 'status', 'label' => 'Status', 'choices' => '{"offline":0,"online":1}', 'db_type' => 'int', 'list_hidden' => 0, 'search' => 0, 'prio' => 5],
+                ['type_id' => 'value', 'type_name' => 'datetime', 'name' => 'published', 'label' => 'Veröffentlicht', 'db_type' => 'datetime', 'list_hidden' => 0, 'search' => 0, 'prio' => 5],
+                ['type_id' => 'value', 'type_name' => 'choice', 'name' => 'status', 'label' => 'Status', 'choices' => '{"offline":0,"online":1}', 'db_type' => 'int', 'list_hidden' => 0, 'search' => 0, 'prio' => 6],
             ],
         ]]));
         rex_yform_manager_table::deleteCache();
 
+        $categoryIds = [];
+        foreach (self::CATEGORIES as $category) {
+            $sql = rex_sql::factory()->setTable(self::CATEGORY_TABLE)->setValue('name', $category);
+            $sql->insert();
+            $categoryIds[$category] = (int) $sql->getLastId();
+        }
         foreach (self::rows() as $row) {
             rex_sql::factory()->setTable(self::TABLE)
                 ->setValue('title', $row[0])
                 ->setValue('teaser', $row[1])
-                ->setValue('category', $row[2])
+                ->setValue('category', $categoryIds[$row[2]] ?? 0)
                 ->setValue('date', $row[3])
+                ->setValue('published', $row[3] . ' ' . $row[5])
                 ->setValue('status', $row[4])
                 ->insert();
         }
@@ -134,8 +166,8 @@ final class DemoTableset
         $config[self::TABLE] = [
             'enabled' => true,
             'label' => '{title}',
-            'search' => 'title,teaser,category',
-            'columns' => 'category,date,status',
+            'search' => 'title,teaser',
+            'columns' => 'category,date,published,status',
             'order' => 'date DESC',
             'filter' => '',
             'clang_field' => '',
@@ -155,14 +187,16 @@ final class DemoTableset
         if (!self::isAvailable()) {
             return;
         }
-        if (null !== rex_yform_manager_table::get(self::TABLE)) {
-            rex_yform_manager_table_api::removeTable(self::TABLE);
+        foreach ([self::TABLE, self::CATEGORY_TABLE] as $tableName) {
+            if (null !== rex_yform_manager_table::get($tableName)) {
+                rex_yform_manager_table_api::removeTable($tableName);
+            }
+            rex_sql::factory()->setQuery('DROP TABLE IF EXISTS ' . rex_sql::factory()->escapeIdentifier($tableName));
         }
-        rex_sql::factory()->setQuery('DROP TABLE IF EXISTS ' . rex_sql::factory()->escapeIdentifier(self::TABLE));
         rex_yform_manager_table::deleteCache();
 
         $config = TableConfig::all();
-        unset($config[self::TABLE]);
+        unset($config[self::TABLE], $config[self::CATEGORY_TABLE]);
         TableConfig::save($config);
 
         if (self::hasVirtualUrls()) {
@@ -222,10 +256,10 @@ final class DemoTableset
             'sitemap_add' => '0', 'sitemap_frequency' => 'weekly', 'sitemap_priority' => '0.5', 'column_sitemap_lastmod' => '',
         ];
         $user = rex::getUser()?->getLogin() ?? 'linkmap';
-        // Zweites Profil mit anderem URL-Aufbau (/rubrik/titel/): zeigen beide
+        // Zweites Profil mit anderem URL-Aufbau (/datum/titel/): zeigen beide
         // auf denselben Artikel, waeren die URLs sonst identisch und das
         // url-Addon verwirft die zweite wegen des Unique-Keys auf url_hash.
-        $blogParameters = ['column_segment_part_1' => 'category', 'column_segment_part_2' => 'title'] + $parameters;
+        $blogParameters = ['column_segment_part_1' => 'date', 'column_segment_part_2' => 'title'] + $parameters;
         foreach ([[self::URL_NAMESPACES[0], $start, $parameters], [self::URL_NAMESPACES[1], $second, $blogParameters]] as [$namespace, $articleId, $profileParameters]) {
             rex_sql::factory()->setTable(rex::getTable(Profile::TABLE_NAME))
                 ->setValue('namespace', $namespace)
@@ -315,23 +349,23 @@ final class DemoTableset
     /**
      * Beispielmeldungen rund um REDAXO (fiktive Daten).
      *
-     * @return list<array{string, string, string, string, int}>
+     * @return list<array{string, string, string, string, int, string}>
      */
     private static function rows(): array
     {
         return [
-            ['REDAXO 5.21 veröffentlicht', 'Neue Core-Version mit PHP-8.4-Support und überarbeiteter Medienverwaltung.', 'Release', '2026-08-04', 1],
-            ['YForm 5: Table Manager mit neuem Feldtyp linkmap', 'Artikel und Datensätze im Overlay auswählen, gespeichert wird wie bei be_link.', 'AddOn', '2026-08-11', 1],
-            ['FriendsOfREDAXO-Treffen: Termine für den Herbst', 'Stammtische in Köln, Hamburg und Berlin, online dazu.', 'Community', '2026-08-18', 1],
-            ['MediaPlace 2.0: Medienpool als Overlay', 'Drag-and-drop, Tags, Sammlungen und KI-Alt-Texte.', 'AddOn', '2026-08-25', 1],
-            ['Tutorial: Multi-Domain mit YRewrite', 'Domains, Sprachen und Startartikel in zehn Minuten eingerichtet.', 'Tutorial', '2026-08-29', 1],
-            ['Entwurf: Roadmap REDAXO 6', 'Interne Sammlung, noch nicht freigegeben.', 'Release', '2026-09-01', 0],
-            ['CKEditor 5 nutzt jetzt die Linkmap für Datensätze', 'Ein Picker für Artikel und YForm-Tabellen, keine eigene Linklösung mehr.', 'AddOn', '2026-09-03', 1],
-            ['Barrierefreiheit: Backend-Checkliste', 'Kontraste, Tastaturbedienung und Alt-Texte im Redaktionsalltag.', 'Tutorial', '2026-09-05', 1],
-            ['Community-Umfrage 2026 gestartet', 'Welche AddOns nutzt ihr, was fehlt euch?', 'Community', '2026-09-08', 1],
-            ['virtual_urls 1.2: rex_getUrl() für Datensätze', 'Trigger-Parameter und domainbewusste Profile.', 'AddOn', '2026-09-10', 1],
-            ['Wartungsfenster redaxo.org am Wochenende', 'Downloads und Installer kurz nicht erreichbar.', 'Community', '2026-09-12', 0],
-            ['REDAXO Camp: Call for Papers', 'Vorträge und Workshops für das Frühjahr gesucht.', 'Community', '2026-09-14', 1],
+            ['REDAXO 5.21 veröffentlicht', 'Neue Core-Version mit PHP-8.4-Support und überarbeiteter Medienverwaltung.', 'Release', '2026-08-04', 1, '09:30:00'],
+            ['YForm 5: Table Manager mit neuem Feldtyp linkmap', 'Artikel und Datensätze im Overlay auswählen, gespeichert wird wie bei be_link.', 'AddOn', '2026-08-11', 1, '11:15:00'],
+            ['FriendsOfREDAXO-Treffen: Termine für den Herbst', 'Stammtische in Köln, Hamburg und Berlin, online dazu.', 'Community', '2026-08-18', 1, '14:00:00'],
+            ['MediaPlace 2.0: Medienpool als Overlay', 'Drag-and-drop, Tags, Sammlungen und KI-Alt-Texte.', 'AddOn', '2026-08-25', 1, '10:45:00'],
+            ['Tutorial: Multi-Domain mit YRewrite', 'Domains, Sprachen und Startartikel in zehn Minuten eingerichtet.', 'Tutorial', '2026-08-29', 1, '16:20:00'],
+            ['Entwurf: Roadmap REDAXO 6', 'Interne Sammlung, noch nicht freigegeben.', 'Release', '2026-09-01', 0, '08:05:00'],
+            ['CKEditor 5 nutzt jetzt die Linkmap für Datensätze', 'Ein Picker für Artikel und YForm-Tabellen, keine eigene Linklösung mehr.', 'AddOn', '2026-09-03', 1, '12:30:00'],
+            ['Barrierefreiheit: Backend-Checkliste', 'Kontraste, Tastaturbedienung und Alt-Texte im Redaktionsalltag.', 'Tutorial', '2026-09-05', 1, '15:10:00'],
+            ['Community-Umfrage 2026 gestartet', 'Welche AddOns nutzt ihr, was fehlt euch?', 'Community', '2026-09-08', 1, '09:00:00'],
+            ['virtual_urls 1.2: rex_getUrl() für Datensätze', 'Trigger-Parameter und domainbewusste Profile.', 'AddOn', '2026-09-10', 1, '13:45:00'],
+            ['Wartungsfenster redaxo.org am Wochenende', 'Downloads und Installer kurz nicht erreichbar.', 'Community', '2026-09-12', 0, '18:00:00'],
+            ['REDAXO Camp: Call for Papers', 'Vorträge und Workshops für das Frühjahr gesucht.', 'Community', '2026-09-14', 1, '10:30:00'],
         ];
     }
 }

@@ -7,6 +7,7 @@
 - Kategorie-Picker: „Kategorie übernehmen“ im Footer nimmt die geöffnete Kategorie (auch nach Auswahl im Baum)
 - Gesperrte Kategorien und Artikel zeigen ein rotes Schloss-Symbol (Baum, Liste, Suche, Verlauf), Offline-Elemente sind grau
 - accessdenied: vererbte Sperren (Option „Kategoriestatus vererben“) werden im Picker als gesperrt angezeigt
+- Datensatz-Listen: Relationen, Auswahlfelder und andere YForm-Typen werden wie in der YForm-Datenliste aufgelöst, Datum/Datum-Zeit in der Kurzform (intlDate/intlDateTime), Sortierung bleibt auf der Rohspalte; Demo-Tableset mit Rubriken-Relation und Datum/Zeit-Feld
 - „Datensatz bearbeiten“ öffnet zuverlässig ein neues Fenster, auch auf YForm-Seiten (pjax-Ausnahme)
 - Datensatz-Listen: Sprachwahl nur bei Tabellen mit konfigurierter Sprachspalte, Link-Spalte zeigt nur die Art der URL (Schema-Label), alle URLs im Tooltip
 - Overlay-Picker als Ersatz für das klassische Linkmap-Popup (Strukturbaum mit Live-Filter, Artikelsuche, Verlauf, Favoriten, Mehrfachauswahl, Tastaturbedienung, Dark Mode)
