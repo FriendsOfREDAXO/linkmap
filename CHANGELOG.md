@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.0 - 2026-09-07
+
+- Erlaubte URL-Schemata pro Tabelle (Datensatz-Quellen): nur angehakte Profile im Picker und bei der Auflösung
+- Kategorien direkt auswählen (Startartikel) über einen Haken neben dem Pfeil, in der Mehrfachauswahl als Markierung
+- Kategorie-Picker: Option `categoriesOnly`, Widget `data-lm-categories`, YForm-Option, Bridge `pickCategory()` – nur Kategorien sichtbar, Wert = Startartikel
+- Kategorie-Picker: „Kategorie übernehmen“ im Footer nimmt die geöffnete Kategorie (auch nach Auswahl im Baum)
+- Gesperrte Kategorien und Artikel zeigen ein rotes Schloss-Symbol (Baum, Liste, Suche, Verlauf), Offline-Elemente sind grau
+- accessdenied: vererbte Sperren (Option „Kategoriestatus vererben“) werden im Picker als gesperrt angezeigt
+
 ## 1.0.0
 
 - Overlay-Picker als Ersatz für das klassische Linkmap-Popup (Strukturbaum mit Live-Filter, Artikelsuche, Verlauf, Favoriten, Mehrfachauswahl, Tastaturbedienung, Dark Mode)
@@ -21,9 +30,3 @@
 - Demo nutzt zufällige vorhandene Artikel und eine bestehende YForm-Tabelle
 - Verwaltung als Unterseiten von „System“ (System → Linkmap: Einstellungen, Demo, Hilfe), kein eigener Menüpunkt
 - Demo-Seite neu aufgebaut; optionales Demo-Tableset „REDAXO-News“ mit Installieren/Entfernen, YForm-Beispiele erst danach
-- Erlaubte URL-Schemata pro Tabelle (Datensatz-Quellen): nur angehakte Profile im Picker und bei der Auflösung
-- Kategorien direkt auswählen (Startartikel) über einen Haken neben dem Pfeil, in der Mehrfachauswahl als Markierung
-- Kategorie-Picker: Option `categoriesOnly`, Widget `data-lm-categories`, YForm-Option, Bridge `pickCategory()` – nur Kategorien sichtbar, Wert = Startartikel
-- Kategorie-Picker: „Kategorie übernehmen“ im Footer nimmt die geöffnete Kategorie (auch nach Auswahl im Baum)
-- Gesperrte Kategorien und Artikel zeigen ein rotes Schloss-Symbol (Baum, Liste, Suche, Verlauf), Offline-Elemente sind grau
-- accessdenied: vererbte Sperren (Option „Kategoriestatus vererben“) werden im Picker als gesperrt angezeigt
