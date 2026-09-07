@@ -605,7 +605,7 @@ html.lm-scroll-lock { overflow: hidden; }
 #lm-overlay .lm-table thead th.lm-th-date,
 #lm-overlay .lm-table thead th.lm-th-createdate,
 #lm-overlay .lm-table thead th.lm-th-updatedate { width: 110px; }
-#lm-overlay .lm-table thead th.lm-th-link { width: 170px; }
+#lm-overlay .lm-table thead th.lm-th-link { width: 130px; }
 @media (max-width: 1100px) {
     #lm-overlay .lm-table thead th.lm-th-link,
     #lm-overlay .lm-table .lm-td-link { display: none; }
@@ -657,8 +657,23 @@ html.lm-scroll-lock { overflow: hidden; }
 #lm-overlay .lm-table .lm-td-label { white-space: normal; }
 #lm-overlay .lm-table .lm-td-label .lm-row-name { white-space: normal; display: inline; }
 #lm-overlay .lm-table .lm-td-label .lm-row-icon { font-size: 13px; width: auto; margin-right: 2px; }
-#lm-overlay .lm-table .lm-td-link { direction: rtl; text-align: left; }
-#lm-overlay .lm-table .lm-td-link code { direction: ltr; unicode-bidi: embed; }
+#lm-overlay .lm-table .lm-td-link { cursor: help; }
+#lm-overlay .lm-scheme-badge {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    font-size: 10px;
+    line-height: 16px;
+    padding: 0 6px;
+    border-radius: 8px;
+    background: var(--lm-badge-bg);
+    color: var(--lm-badge-text);
+    white-space: nowrap;
+}
+#lm-overlay .lm-scheme-badge-preferred { color: var(--lm-link); background: var(--lm-active-bg); }
+#lm-overlay .lm-scheme-badge-none { font-style: italic; background: transparent; padding: 0; }
 #lm-overlay .lm-table .lm-scheme-row td { padding: 0; border-bottom: 1px solid var(--lm-border); }
 /* Die Tabelle kann breiter als der sichtbare Bereich sein (overflow-x):
    der Dialog bleibt per sticky im sichtbaren Ausschnitt und begrenzt sich

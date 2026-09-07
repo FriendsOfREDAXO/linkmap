@@ -802,11 +802,20 @@
         });
     }
 
+    // Sprachwahl nur, wo sie wirkt: Struktur immer, Datensatz-Tabellen nur
+    // mit konfiguriertem Sprachfeld (browse().clangAware / Container-Meta).
+    function syncClangSelect() {
+        if (!els.clang) return;
+        var view = state.sourceView;
+        els.clang.hidden = !!view && !view.clangAware;
+    }
+
     function openCategory(categoryId) {
         state.categoryId = categoryId || 0;
         state.currentCategory = null;
         state.view = 'category';
         state.sourceView = null;
+        syncClangSelect();
         highlightSource(null, null);
         els.search.placeholder = t(state.categoriesOnly ? 'linkmap_search_categories_placeholder' : 'linkmap_search_placeholder');
         var seq = ++state.requestSeq;
@@ -1163,7 +1172,8 @@
         var meta = containerMeta(source, container);
         if (!meta.source || !meta.container) return;
         state.view = 'source';
-        state.sourceView = { source: source, container: container, page: 1, query: '', total: 0, pages: 0, sort: '', dir: 'asc', columns: [] };
+        state.sourceView = { source: source, container: container, page: 1, query: '', total: 0, pages: 0, sort: '', dir: 'asc', columns: [], clangAware: !!meta.container.clangAware };
+        syncClangSelect();
         highlightTree(-1);
         highlightSource(source, container);
         els.search.value = '';
@@ -1193,6 +1203,7 @@
             view.columns = data.columns || [];
             view.sort = data.sort || '';
             view.addUrl = data.addUrl || (meta.container && meta.container.addUrl) || '';
+            if (typeof data.clangAware === 'boolean') { view.clangAware = data.clangAware; syncClangSelect(); }
             if (!append) renderContainerActions(view);
             renderDatasetList(data, append, meta);
         }).catch(function (err) {
@@ -1220,10 +1231,26 @@
             }
             html += '<td class="lm-td-' + esc(col.key) + '">' + esc(value === undefined || value === null ? '' : value) + '</td>';
         });
-        if (!state.locked) html += '<td class="lm-td-link" title="' + esc(item.link) + '"><code class="lm-row-link">' + esc(item.link.replace(/^yform:\/\//, '')) + '</code></td>';
+        if (!state.locked) html += '<td class="lm-td-link" title="' + esc(datasetUrlTooltip(item)) + '">' + datasetUrlBadges(item) + '</td>';
         html += '<td class="lm-td-edit">' + (item.editUrl ? '<a class="lm-row-action lm-row-edit" href="' + esc(item.editUrl) + '" target="_blank" rel="noopener" data-action="edit-dataset" title="' + esc(t('linkmap_dataset_edit')) + '"><i class="fa-solid fa-pen"></i></a>' : '') + '</td>';
         if (state.callback && !state.multiple) html += '<td class="lm-td-pick"><span class="lm-row-action lm-row-pick"><i class="fa-solid fa-check"></i></span></td>';
         return html + '</tr>';
+    }
+
+    // Link-Spalte: schmal, nur die Art der URL (Schema-Label) als Badge --
+    // die konkreten URLs stehen im Tooltip.
+    function datasetUrlBadges(item) {
+        var urls = item.urls || [];
+        if (!urls.length) return '<span class="lm-scheme-badge lm-scheme-badge-none">' + esc(t('linkmap_col_link_none')) + '</span>';
+        return urls.map(function (u) {
+            return '<span class="lm-scheme-badge' + (u.preferred ? ' lm-scheme-badge-preferred' : '') + '">' + esc(u.label) + '</span>';
+        }).join(' ');
+    }
+
+    function datasetUrlTooltip(item) {
+        var lines = [item.link];
+        (item.urls || []).forEach(function (u) { lines.push((u.label ? u.label + ': ' : '') + u.url); });
+        return lines.join('\n');
     }
 
     function datasetTableHead(columns) {

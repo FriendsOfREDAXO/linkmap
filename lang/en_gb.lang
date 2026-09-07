@@ -104,6 +104,8 @@ linkmap_yform_sources_notice = "all" or list, e.g. "article,yform". Empty = arti
 linkmap_tables_col_columns = Columns (list)
 linkmap_col_label = Name
 linkmap_col_link = Link
+linkmap_scheme_url_template = URL template
+linkmap_col_link_none = no URL
 linkmap_sort_by = Sort by {label}
 
 linkmap_widget_open_dataset = Select dataset

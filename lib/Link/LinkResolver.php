@@ -127,7 +127,7 @@ final class LinkResolver
         if ([] === $result) {
             $url = self::urlViaTemplate($table, $id, $clang);
             if (null !== $url) {
-                $result[] = ['scheme' => '', 'label' => 'URL-Template', 'url' => $url, 'preferred' => true];
+                $result[] = ['scheme' => '', 'label' => \rex_i18n::msg('linkmap_scheme_url_template'), 'url' => $url, 'preferred' => true];
             }
         }
         return $result;

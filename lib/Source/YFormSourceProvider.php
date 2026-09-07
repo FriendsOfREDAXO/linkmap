@@ -73,6 +73,7 @@ final class YFormSourceProvider implements SourceProviderInterface
                 'label' => rex_i18n::translate($table->getName()),
                 'icon' => 'fa-solid fa-table-list',
                 'linkable' => LinkResolver::tableIsLinkable($tableName),
+                'clangAware' => $this->isClangAware($tableName),
                 'addUrl' => $this->addUrl($table),
             ];
         }
@@ -142,11 +143,15 @@ final class YFormSourceProvider implements SourceProviderInterface
 
         $q->limit(($page - 1) * self::PER_PAGE, self::PER_PAGE);
 
+        $linkable = LinkResolver::tableIsLinkable($container);
         $items = [];
         foreach ($q->find() as $dataset) {
             if ($dataset instanceof rex_yform_manager_dataset) {
                 $item = $this->item($dataset, $table, $config, $columns);
                 $item['cells'] = $this->cells($dataset, $listColumns);
+                // Moegliche URLs je Datensatz (Schema-Label + URL) fuer die
+                // Link-Spalte: Badge zeigt die Art, Tooltip die URLs.
+                $item['urls'] = $linkable ? LinkResolver::candidates($container, $dataset->getId(), $clang) : [];
                 $items[] = $item;
             }
         }
@@ -157,6 +162,7 @@ final class YFormSourceProvider implements SourceProviderInterface
             'page' => $page,
             'pages' => $pages,
             'columns' => $listColumns,
+            'clangAware' => $this->isClangAware($container),
             'sort' => null !== $sortColumn ? $sort : '',
             'dir' => strtolower($dir),
             'addUrl' => $this->addUrl($table),
@@ -337,6 +343,16 @@ final class YFormSourceProvider implements SourceProviderInterface
             'linkable' => LinkResolver::tableIsLinkable($tableName),
             'editUrl' => $this->editUrl($table, $dataset->getId()),
         ];
+    }
+
+    /**
+     * Sprachabhaengig ist eine Tabelle nur, wenn ein Sprachfeld konfiguriert
+     * ist und existiert -- sonst ist die Sprachwahl im Picker sinnlos.
+     */
+    private function isClangAware(string $tableName): bool
+    {
+        $clangField = trim((string) ((TableConfig::get($tableName) ?? [])['clang_field'] ?? ''));
+        return '' !== $clangField && in_array($clangField, $this->columns($tableName), true);
     }
 
     /** Bearbeiten-URL (YForm-Formular, neues Fenster) -- nur mit Bearbeitungsrecht. */
