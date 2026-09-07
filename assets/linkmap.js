@@ -521,9 +521,15 @@
 
         // Delegation: Content
         els.list.addEventListener('click', function (e) {
-            // Bearbeiten-Link: echter Link ins neue Fenster, keine Zeilenauswahl
-            if (e.target.closest('[data-action="edit-dataset"]')) {
+            // Bearbeiten-Link: immer neues Fenster, keine Zeilenauswahl. Explizit
+            // per window.open, weil REDAXOs pjax-Handler Links auf die gerade
+            // geoeffnete Backend-Seite (z.B. yform/manager/data_edit) sonst in
+            // dieselbe Seite laedt.
+            var editLink = e.target.closest('[data-action="edit-dataset"]');
+            if (editLink) {
+                e.preventDefault();
                 e.stopPropagation();
+                window.open(editLink.getAttribute('href'), '_blank', 'noopener');
                 return;
             }
             var schemeBtn = e.target.closest('.lm-scheme-option');
@@ -1232,7 +1238,7 @@
             html += '<td class="lm-td-' + esc(col.key) + '">' + esc(value === undefined || value === null ? '' : value) + '</td>';
         });
         if (!state.locked) html += '<td class="lm-td-link" title="' + esc(datasetUrlTooltip(item)) + '">' + datasetUrlBadges(item) + '</td>';
-        html += '<td class="lm-td-edit">' + (item.editUrl ? '<a class="lm-row-action lm-row-edit" href="' + esc(item.editUrl) + '" target="_blank" rel="noopener" data-action="edit-dataset" title="' + esc(t('linkmap_dataset_edit')) + '"><i class="fa-solid fa-pen"></i></a>' : '') + '</td>';
+        html += '<td class="lm-td-edit">' + (item.editUrl ? '<a class="lm-row-action lm-row-edit" href="' + esc(item.editUrl) + '" target="_blank" rel="noopener" data-pjax="false" data-action="edit-dataset" title="' + esc(t('linkmap_dataset_edit')) + '"><i class="fa-solid fa-pen"></i></a>' : '') + '</td>';
         if (state.callback && !state.multiple) html += '<td class="lm-td-pick"><span class="lm-row-action lm-row-pick"><i class="fa-solid fa-check"></i></span></td>';
         return html + '</tr>';
     }
