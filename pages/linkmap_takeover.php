@@ -44,6 +44,17 @@ $closeHref = rex_url::backendPage('structure', ['clang' => $clang, 'category_id'
     var categoryId = <?= (int) $categoryId ?>;
     var closeHref = <?= json_encode($closeHref) ?>;
 
+    // Feld im Opener -- bei doppelten IDs ueber die Bridge des Openers (bevorzugt
+    // das sichtbare Duplikat), sonst klassisch per getElementById().
+    function findInOpener(id) {
+        var opener = window.opener;
+        if (!opener || !opener.document) return null;
+        if (opener.rex5LinkmapBridge && typeof opener.rex5LinkmapBridge.findField === 'function') {
+            return opener.rex5LinkmapBridge.findField(id, opener.document);
+        }
+        return opener.document.getElementById(id);
+    }
+
     function finishSingle(link, name) {
         var opener = window.opener;
         var prevented = false;
@@ -54,8 +65,8 @@ $closeHref = rex_url::backendPage('structure', ['clang' => $clang, 'category_id'
         }
         if (!prevented && opener && opener.document) {
             var id = String(link).replace('redaxo://', '');
-            var input = openerField ? opener.document.getElementById(openerField) : null;
-            var nameInput = openerFieldName ? opener.document.getElementById(openerFieldName) : null;
+            var input = openerField ? findInOpener(openerField) : null;
+            var nameInput = openerFieldName ? findInOpener(openerFieldName) : null;
             if (input) {
                 input.value = id;
                 if (opener.jQuery) opener.jQuery(input).trigger('change');
@@ -69,7 +80,7 @@ $closeHref = rex_url::backendPage('structure', ['clang' => $clang, 'category_id'
         var opener = window.opener;
         if (opener && opener.document && openerField) {
             var listId = openerField.slice('REX_LINKLIST_'.length);
-            var select = opener.document.getElementById('REX_LINKLIST_SELECT_' + listId);
+            var select = findInOpener('REX_LINKLIST_SELECT_' + listId);
             if (select) {
                 items.forEach(function (item) {
                     var option = opener.document.createElement('OPTION');

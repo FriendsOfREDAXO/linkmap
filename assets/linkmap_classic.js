@@ -73,6 +73,42 @@
         el.dispatchEvent(evt);
     }
 
+    // Zuletzt geklickter Button/Link: entscheidet bei doppelten Feld-IDs,
+    // welches Feld gemeint ist (siehe findField()).
+    var lastTrigger = null;
+    document.addEventListener('click', function (e) {
+        var target = e.target && e.target.closest ? e.target.closest('a, button, [onclick]') : null;
+        if (target) lastTrigger = target;
+    }, true);
+
+    /**
+     * Zielfeld per ID -- robust gegen doppelte IDs im Dokument (z.B. Builder-
+     * Zaehler, die pro AJAX-Request bei 1001 neu beginnen, oder kopierte
+     * Bloecke): getElementById() traefe immer nur das erste, oft unsichtbare
+     * Duplikat. Bevorzugt wird das Feld im selben Container wie der zuletzt
+     * geklickte Button, danach das sichtbare, zuletzt das erste.
+     */
+    function findField(id, doc) {
+        doc = doc || document;
+        if (!id) return null;
+        var selector = '[id="' + String(id).replace(/["\\]/g, '\\$&') + '"]';
+        var all = doc.querySelectorAll(selector);
+        if (all.length <= 1) return all[0] || null;
+        var candidates = Array.prototype.slice.call(all);
+        if (lastTrigger && doc === document) {
+            for (var node = lastTrigger.parentElement; node && node !== doc.body; node = node.parentElement) {
+                var inside = candidates.filter(function (el) { return node.contains(el); });
+                if (inside.length === 1) return inside[0];
+                if (inside.length > 1) break;
+            }
+        }
+        var visible = candidates.filter(function (el) {
+            var ref = 'hidden' === el.type ? el.parentElement : el;
+            return !!(ref && ref.offsetParent !== null);
+        });
+        return visible[visible.length - 1] || candidates[0];
+    }
+
     // Core-Format "Name [ID]" fuer REX_LINK_*_NAME / REX_LINKLIST-Optionen
     // (rex_var_link::getWidget()); Editoren bekommen im Event nur den Namen.
     function classicLabel(name, link) {
@@ -110,8 +146,9 @@
             }
             if (prevented || !id) return;
             var linkid = String(link).replace('redaxo://', '');
-            var input = document.getElementById(id);
-            var nameInput = document.getElementById(id + '_NAME');
+            var input = findField(id);
+            // _NAME-Feld moeglichst neben dem gefundenen Feld (gleicher Container)
+            var nameInput = (input && input.parentElement && input.parentElement.querySelector('[id="' + id + '_NAME"]')) || findField(id + '_NAME');
             if (input) {
                 input.value = linkid;
                 fireChange(input);
@@ -130,7 +167,7 @@
         options.onClose = function () { popup._markClosed(); };
 
         window.LM.open(function (items) {
-            var select = document.getElementById('REX_LINKLIST_SELECT_' + id);
+            var select = findField('REX_LINKLIST_SELECT_' + id);
             if (select) {
                 items.forEach(function (item) {
                     var exists = Array.prototype.some.call(select.options, function (o) { return o.value === String(item.id); });
@@ -199,6 +236,11 @@
     window.rex5LinkmapBridge = window.rex5LinkmapBridge || {
         isActive: function () {
             return !!(window.LM && typeof window.LM.open === 'function');
+        },
+        // Zielfeld per ID, robust gegen doppelte IDs (siehe findField()); nutzt
+        // auch das Takeover-Popup fuer den Opener.
+        findField: function (id, doc) {
+            return findField(id, doc);
         },
         pick: function (onSelect, options) {
             window.LM.open(onSelect, options || {});
