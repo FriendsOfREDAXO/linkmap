@@ -212,6 +212,9 @@ final class YFormSourceProvider implements SourceProviderInterface
             $fieldLabels[$field->getName()] = ['label' => rex_i18n::translate($field->getLabel()), 'type' => $field->getTypeName(), 'hidden' => $field->isHiddenInList()];
         }
 
+        $template = self::labelTemplate($config);
+        $duplicateColumn = '' === $template || 1 === preg_match('~^\{([a-z0-9_]+)\}$~i', $template) ? $labelColumn : null;
+
         $keys = [];
         if ([] !== $configured) {
             $keys = $configured;
@@ -223,7 +226,10 @@ final class YFormSourceProvider implements SourceProviderInterface
             }
         }
         foreach ($keys as $key) {
-            if ($key === $labelColumn || 'id' === $key || !in_array($key, $columns, true)) {
+            // Eine Spalte entfällt nur, wenn die Bezeichnung genau sie zeigt (Vorlage „{spalte}“ oder
+            // automatische Bezeichnung) – sonst stünde derselbe Wert doppelt da. Bei „{name} {nachname}“
+            // bleibt „name“ als Spalte erhalten.
+            if ('id' === $key || !in_array($key, $columns, true) || $key === $duplicateColumn) {
                 continue;
             }
             if (count($result) >= 6) {
@@ -267,7 +273,7 @@ final class YFormSourceProvider implements SourceProviderInterface
      */
     private function labelColumn(array $config, array $columns): ?string
     {
-        $template = trim((string) ($config['label'] ?? ''));
+        $template = self::labelTemplate($config);
         if ('' !== $template && preg_match('~\{([a-z0-9_]+)\}~i', $template, $m) && in_array($m[1], $columns, true)) {
             return $m[1];
         }
@@ -472,6 +478,20 @@ final class YFormSourceProvider implements SourceProviderInterface
     }
 
     /**
+     * Bezeichnungs-Vorlage aus der Konfiguration – nur mit mindestens einem Platzhalter {spalte}.
+     * Reiner Text (z. B. „Künstler“) stünde sonst in jeder Zeile gleich; dann gilt die automatische
+     * Bezeichnung (name/title/… bzw. erste Textspalte).
+     *
+     * @param array<string, mixed> $config
+     */
+    public static function labelTemplate(array $config): string
+    {
+        $template = trim((string) ($config['label'] ?? ''));
+
+        return 1 === preg_match('~\{[a-z0-9_]+\}~i', $template) ? $template : '';
+    }
+
+    /**
      * Label aus Template "{spalte} ..." oder Fallback (name/title/erste Textspalte/id).
      *
      * @param array<string, mixed> $config
@@ -479,7 +499,7 @@ final class YFormSourceProvider implements SourceProviderInterface
      */
     private function label(rex_yform_manager_dataset $dataset, array $config, array $columns): string
     {
-        $template = trim((string) ($config['label'] ?? ''));
+        $template = self::labelTemplate($config);
         if ('' !== $template) {
             $table = $dataset->getTable();
             // Platzhalter liefern den Anzeigewert (Relation aufgeloest, Datum kurz)

@@ -79,15 +79,16 @@ linkmap_tables_title = Dataset sources (YForm tables)
 linkmap_tables_intro = Enabled tables appear in the overlay under "Datasets". The picker returns a link in the format yform://table/id which is resolved in the frontend via URL profile, virtual URL, extension point or URL template.
 linkmap_tables_col_enabled = Active
 linkmap_tables_col_table = Table
-linkmap_tables_col_label = Label template
+linkmap_tables_col_label = Label (template)
 linkmap_tables_col_search = Search columns
 linkmap_tables_col_order = Order
 linkmap_tables_col_filter = Filter (WHERE)
 linkmap_tables_col_clang = Language column
 linkmap_tables_col_url = Schemes / URL template
 linkmap_tables_no_scheme = no URL profile, no virtual URL
-linkmap_tables_help = Label template with placeholders {column}, empty = name/title or first text column. Search columns comma separated, empty = the table's "searchable" fields. List columns comma separated, empty = fields visible in the table manager; column headers are sortable. Filter as SQL condition without WHERE. Language column: datasets are filtered by the caller's language. URL template only needed if neither the url addon nor virtual_urls know the table (placeholders {id}, {clang}, {column}).
+linkmap_tables_help = Label: template with placeholders {column}, e.g. "{name} {lastname}" or "{title} ({year})" – plain text without placeholders is ignored, empty = name/title or first text column. Search columns comma separated, empty = the table's "searchable" fields. List columns comma separated, empty = fields visible in the table manager; column headers are sortable. Filter as SQL condition without WHERE. Language column: datasets are filtered by the caller's language. URL template only needed if neither the url addon nor virtual_urls know the table (placeholders {id}, {clang}, {column}).
 linkmap_tables_save = Save tables
+linkmap_tables_label_no_placeholder = For {0} the label contains no placeholder like {name} – it is ignored and the automatic label is shown.
 linkmap_tables_saved = Dataset sources saved.
 linkmap_sidebar_sources = Datasets
 linkmap_source_no_scheme = no URL scheme – link cannot be resolved
