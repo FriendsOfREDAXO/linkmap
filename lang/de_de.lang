@@ -79,15 +79,16 @@ linkmap_tables_title = Datensatz-Quellen (YForm-Tabellen)
 linkmap_tables_intro = Freigegebene Tabellen erscheinen im Overlay unter „Datensätze“. Ausgewählt wird ein Link im Format yform://tabelle/id, der im Frontend über URL-Profil, Virtual URL, Extension Point oder URL-Template aufgelöst wird.
 linkmap_tables_col_enabled = Aktiv
 linkmap_tables_col_table = Tabelle
-linkmap_tables_col_label = Label-Template
+linkmap_tables_col_label = Bezeichnung (Vorlage)
 linkmap_tables_col_search = Suchspalten
 linkmap_tables_col_order = Sortierung
 linkmap_tables_col_filter = Filter (WHERE)
 linkmap_tables_col_clang = Sprachspalte
 linkmap_tables_col_url = Schemata / URL-Template
 linkmap_tables_no_scheme = kein URL-Profil, keine Virtual URL
-linkmap_tables_help = Label-Template mit Platzhaltern {spalte}, leer = name/title bzw. erste Textspalte. Suchspalten kommasepariert, leer = „durchsuchbar“-Felder der Tabelle. Spalten der Listenansicht kommasepariert, leer = im Table Manager sichtbare Felder; Spaltenköpfe sind sortierbar. Filter als SQL-Bedingung ohne WHERE. Sprachspalte: Datensätze werden nach der Sprache des Aufrufers gefiltert. URL-Template nur nötig, wenn weder url-Addon noch virtual_urls die Tabelle kennen (Platzhalter {id}, {clang}, {spalte}).
+linkmap_tables_help = Bezeichnung: Vorlage mit Platzhaltern {spalte}, z. B. „{name} {nachname}“ oder „{title} ({jahr})“ – reiner Text ohne Platzhalter wird ignoriert, leer = name/title bzw. erste Textspalte. Suchspalten kommasepariert, leer = „durchsuchbar“-Felder der Tabelle. Spalten der Listenansicht kommasepariert, leer = im Table Manager sichtbare Felder; Spaltenköpfe sind sortierbar. Filter als SQL-Bedingung ohne WHERE. Sprachspalte: Datensätze werden nach der Sprache des Aufrufers gefiltert. URL-Template nur nötig, wenn weder url-Addon noch virtual_urls die Tabelle kennen (Platzhalter {id}, {clang}, {spalte}).
 linkmap_tables_save = Tabellen speichern
+linkmap_tables_label_no_placeholder = Bei {0} enthält die Bezeichnung keinen Platzhalter wie {name} – sie wird ignoriert, angezeigt wird die automatische Bezeichnung.
 linkmap_tables_saved = Datensatz-Quellen gespeichert.
 linkmap_sidebar_sources = Datensätze
 linkmap_source_no_scheme = kein URL-Schema – Link nicht auflösbar

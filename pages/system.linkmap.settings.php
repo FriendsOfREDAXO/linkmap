@@ -65,6 +65,16 @@ if (\FriendsOfRedaxo\Linkmap\Source\YFormSourceProvider::isAvailable()) {
             }
             \FriendsOfRedaxo\Linkmap\TableConfig::save($config);
             $message = rex_view::success(rex_i18n::msg('linkmap_tables_saved'));
+            // Bezeichnung ohne Platzhalter wäre in jeder Zeile gleich – Hinweis statt stiller Überraschung
+            $plain = [];
+            foreach ($config as $tableName => $values) {
+                if ('' !== $values['label'] && '' === \FriendsOfRedaxo\Linkmap\Source\YFormSourceProvider::labelTemplate($values)) {
+                    $plain[] = rex_i18n::translate((string) rex_yform_manager_table::get($tableName)?->getName());
+                }
+            }
+            if ([] !== $plain) {
+                $message .= rex_view::warning(rex_i18n::msg('linkmap_tables_label_no_placeholder', implode(', ', $plain)));
+            }
         }
     }
 
@@ -83,7 +93,7 @@ if (\FriendsOfRedaxo\Linkmap\Source\YFormSourceProvider::isAvailable()) {
         $rows .= '<tr' . ($table->isHidden() ? ' class="text-muted"' : '') . '>'
             . '<td class="text-center"><input type="checkbox" name="tables[' . rex_escape($name) . '][enabled]" value="1"' . (!empty($cfg['enabled']) ? ' checked' : '') . '></td>'
             . '<td><strong>' . rex_escape(rex_i18n::translate($table->getName())) . '</strong><br><small class="text-muted">' . rex_escape($name) . '</small></td>'
-            . '<td>' . $field('label', '{name}') . '</td>'
+            . '<td>' . $field('label', '{name} {nachname}') . '</td>'
             . '<td>' . $field('search', 'name, title') . '</td>'
             . '<td>' . $field('columns', 'date, category') . '</td>'
             . '<td>' . $field('order', 'id DESC') . '</td>'

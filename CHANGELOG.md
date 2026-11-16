@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.1
+- Datensatz-Quellen: Eine Bezeichnung ohne Platzhalter (z. B. „Künstler“) stand in jeder Zeile gleich – sie wird jetzt ignoriert, es gilt die automatische Bezeichnung (name/title …). Die Einstellungsseite warnt beim Speichern.
+- Datensatz-Listen: Eine konfigurierte Spalte entfällt nur noch, wenn die Bezeichnung genau sie zeigt (Vorlage „{spalte}“ oder automatisch). Vorher fehlte z. B. „name“ in der Liste, obwohl die Bezeichnung gar nicht „name“ zeigte; bei „{name} {nachname}“ bleibt „name“ als Spalte erhalten.
+- Einstellungen: Spalte heißt „Bezeichnung (Vorlage)“, Hilfetext mit Beispielen.
+
 ## 1.0.0
 - Erlaubte URL-Schemata pro Tabelle (Datensatz-Quellen): nur angehakte Profile im Picker und bei der Auflösung
 - Kategorien direkt auswählen (Startartikel) über einen Haken neben dem Pfeil, in der Mehrfachauswahl als Markierung
