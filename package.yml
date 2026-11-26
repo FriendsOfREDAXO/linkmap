@@ -1,5 +1,5 @@
 package: linkmap
-version: '1.0.1'
+version: '1.1.0'
 author: FriendsOfREDAXO
 supportpage: https://github.com/FriendsOfREDAXO/linkmap
 
@@ -42,3 +42,4 @@ default_config:
     search_limit: 50
     resolve_yform_links: true
     resolve_legacy_links: false
+    media_links: true

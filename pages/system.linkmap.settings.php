@@ -18,6 +18,10 @@ $field = $form->addInputField('number', 'search_limit', null, ['class' => 'form-
 $field->setLabel(rex_i18n::msg('linkmap_settings_search_limit_label'));
 $field->setNotice(rex_i18n::msg('linkmap_settings_search_limit_hint'));
 
+$field = $form->addCheckboxField('media_links');
+$field->addOption(rex_i18n::rawMsg('linkmap_settings_media_label'), 1);
+$field->setNotice(rex_i18n::msg('linkmap_settings_media_hint'));
+
 $form->addFieldset(rex_i18n::msg('linkmap_settings_links_legend'));
 
 $field = $form->addCheckboxField('resolve_yform_links');

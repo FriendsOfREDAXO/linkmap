@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+- Medien verlinken: Button „Medium auswählen“ oben rechts im Overlay, wenn ein Editor (CKEditor 5, TinyMCE, MForm, Builder) einen Link wählt. Öffnet MediaPlace, ohne MediaPlace den klassischen Medienpool; Ergebnis ist `/media/datei`. Abbrechen führt zurück zur Linkmap. Ersetzt den Tab „Medienpool“ des alten TinyMCE-Linkpopups, der mit dem Overlay nicht mehr erreichbar war.
+- TinyMCE: Durchsuchen bei einem bestehenden `/media/`-Link öffnet die Medienauswahl direkt und liefert den vollständigen Pfad. Mit MediaPlace kam vorher nur der Dateiname zurück.
+- Neue Einstellung „Medien im Link-Dialog anbieten“ (Default an), sichtbar nur mit Medienpool-Recht.
+- JS-API: `LM.pickMedia()`, `LM.mediaAvailable()`, Option `media`; Bridge `rex5LinkmapBridge.pickMedia()`.
+
 ## 1.0.1
 - Datensatz-Quellen: Eine Bezeichnung ohne Platzhalter (z. B. „Künstler“) stand in jeder Zeile gleich – sie wird jetzt ignoriert, es gilt die automatische Bezeichnung (name/title …). Die Einstellungsseite warnt beim Speichern.
 - Datensatz-Listen: Eine konfigurierte Spalte entfällt nur noch, wenn die Bezeichnung genau sie zeigt (Vorlage „{spalte}“ oder automatisch). Vorher fehlte z. B. „name“ in der Liste, obwohl die Bezeichnung gar nicht „name“ zeigte; bei „{name} {nachname}“ bleibt „name“ als Spalte erhalten.

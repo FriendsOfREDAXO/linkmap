@@ -173,6 +173,15 @@ if (rex::isBackend() && rex::getUser() && rex_backend_login::hasSession()) {
             'rootAccess' => Permission::hasRootAccess(),
             // Datensatz-Quellen (Provider + Container), die der User sehen darf
             'sources' => Permission::hasStructureAccess() ? SourceRegistry::getAvailableSources() : [],
+            // Medien verlinken (Sidebar "Medien"): Einstellung + Medienpool-Recht.
+            // Die Auswahl selbst laeuft ueber MediaPlace bzw. den klassischen
+            // Medienpool (assets/linkmap.js, pickMedia()).
+            'media' => [
+                'enabled' => (bool) rex_config::get($addonName, 'media_links', true)
+                    && rex_addon::get('mediapool')->isAvailable()
+                    && $user->getComplexPerm('media')?->hasMediaPerm(),
+                'baseUrl' => '/media/',
+            ],
             'csrf' => rex_csrf_token::factory(FriendsOfRedaxo\Linkmap\Api\Favorites::class)->getUrlParams(),
             'isPopup' => rex_be_controller::getCurrentPageObject()?->isPopup() ?? false,
             'user' => $user->getLogin(),

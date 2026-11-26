@@ -23,7 +23,17 @@
  *          Relation-Modus, Ergebnis wird als Datensatz-ID gespeichert; der
  *          Container muss dafuer nicht als Quelle freigegeben sein),
  *          categoriesOnly (true: Kategorie-Picker -- nur Kategorien in Liste
- *          und Suche, Ergebnis ist der Startartikel der Kategorie)
+ *          und Suche, Ergebnis ist der Startartikel der Kategorie),
+ *          media (true/false: Button "Medium auswaehlen" in der Titelleiste -- Datei aus dem
+ *          Medienpool verlinken, Ergebnis /media/datei.pdf; Default: an bei
+ *          sources 'all', also bei Editoren ohne festes Zielfeld)
+ *
+ *   LM.pickMedia(onSelect, onCancel?)
+ *                                  Medienpool-Auswahl ohne Overlay: MediaPlace
+ *                                  (MP.open) wenn vorhanden, sonst klassisches
+ *                                  Medienpool-Popup. onSelect(link, filename)
+ *                                  mit link = /media/datei.pdf. Liefert false,
+ *                                  wenn kein Medienpool verfuegbar ist.
  *
  * Datensatz-Quellen (config.sources, siehe lib/Source) liefern Links wie
  * yform://tabelle/id; Aufrufer, die nur Artikel-IDs speichern (REX_LINK),
@@ -63,7 +73,8 @@
         locked: false,
         extraContainer: null,
         categoriesOnly: false,
-        currentCategory: null
+        currentCategory: null,
+        mediaAllowed: false
     };
 
     var els = {};
@@ -276,6 +287,7 @@
                             '</div>' +
                         '</div>' +
                         '<div class="lm-header-actions">' +
+                            '<button type="button" class="lm-media-btn" hidden title="' + esc(t('linkmap_media_pick_hint')) + '"><i class="fa-solid fa-photo-film"></i> <span class="lm-media-btn-label">' + esc(t('linkmap_media_pick')) + '</span></button>' +
                             '<button type="button" class="lm-fullscreen-toggle" title="' + esc(t('linkmap_fullscreen')) + '"><i class="fa-solid fa-expand"></i></button>' +
                             '<button type="button" class="lm-close" title="' + esc(t('linkmap_close')) + '"><i class="fa-solid fa-xmark"></i></button>' +
                         '</div>' +
@@ -344,6 +356,7 @@
         els.selCount = qs('.lm-sel-count', root);
         els.apply = qs('.lm-apply', root);
         els.cancel = qs('.lm-btn-cancel', root);
+        els.mediaBtn = qs('.lm-media-btn', root);
 
         state.hideOffline = !!storageGet('hideOffline', false);
         state.collapsed = storageGet('collapsed', null);
@@ -364,6 +377,7 @@
         });
         qs('.lm-close', els.root).addEventListener('click', function () { close(); });
         els.cancel.addEventListener('click', function () { close(); });
+        els.mediaBtn.addEventListener('click', function () { pickMediaFromOverlay(); });
         qs('.lm-fullscreen-toggle', els.root).addEventListener('click', function () {
             els.modal.classList.toggle('lm-fullscreen');
         });
@@ -677,6 +691,14 @@
             ? ['article'].concat((config.sources || []).map(function (src) { return src.id; }))
             : (Array.isArray(options.sources) && options.sources.length ? options.sources : ['article']);
         renderSources();
+
+        // Medien verlinken: nur bei Einzelauswahl ohne festes Zielfeld
+        // (REX_LINK speichert eine Artikel-ID, dort ergibt ein Medienlink
+        // keinen Sinn) -- Default deshalb an bei sources 'all' (Editoren).
+        var wantMedia = typeof options.media === 'boolean' ? options.media : options.sources === 'all';
+        state.mediaAllowed = wantMedia && mediaAvailable() && !!state.callback
+            && !state.multiple && !state.categoriesOnly && !state.locked;
+        els.mediaBtn.hidden = !state.mediaAllowed;
 
         if (Array.isArray(options.selected) && options.selected.length && state.multiple) {
             window.LM.resolve(options.selected, state.clang).then(function (articles) {
@@ -1485,6 +1507,89 @@
         finishSingle(article.link, article.label, article);
     }
 
+    // ---------------------------------------------------------------- media
+
+    function mediaAvailable() {
+        if (!config || !config.media || !config.media.enabled) return false;
+        return isMediaplaceActive() || typeof window.openREXMedia === 'function';
+    }
+
+    function isMediaplaceActive() {
+        return !!(window.MP && typeof window.MP.open === 'function');
+    }
+
+    function mediaLink(filename) {
+        return ((config && config.media && config.media.baseUrl) || '/media/') + filename;
+    }
+
+    /**
+     * Medienpool-Auswahl: MediaPlace-Overlay (MP.open) bzw. ohne MediaPlace
+     * das klassische Popup (openREXMedia + rex:selectMedia). onSelect bekommt
+     * (link, filename), onCancel wird bei Abbruch ohne Auswahl aufgerufen.
+     */
+    function pickMedia(onSelect, onCancel) {
+        ensureConfig();
+        if (!mediaAvailable()) return false;
+        var settled = false;
+        function select(filename) {
+            if (settled || !filename) return;
+            settled = true;
+            onSelect(mediaLink(filename), filename);
+        }
+        function cancel() {
+            if (settled) return;
+            settled = true;
+            if (typeof onCancel === 'function') onCancel();
+        }
+
+        if (isMediaplaceActive()) {
+            // MediaPlace ruft onSelect vor close() auf, onClose kommt also bei
+            // einer Auswahl erst danach und wird dann ignoriert.
+            window.MP.open(select, { onClose: cancel });
+            return true;
+        }
+
+        // Ohne opener_input_field blendet der klassische Medienpool keine
+        // Uebernehmen-Buttons ein -- deshalb openREXMedia() mit Dummy-ID.
+        var popup = window.openREXMedia('linkmap_medialink');
+        if (!popup) return false;
+        if (window.jQuery) {
+            window.jQuery(popup).on('rex:selectMedia', function (event, filename) {
+                event.preventDefault();
+                try { popup.close(); } catch (e) { /* bereits zu */ }
+                select(filename);
+            });
+        }
+        var watcher = setInterval(function () {
+            if (settled) { clearInterval(watcher); return; }
+            if (popup.closed) {
+                clearInterval(watcher);
+                cancel();
+            }
+        }, 400);
+        return true;
+    }
+
+    // Aus dem Overlay heraus: Overlay waehrenddessen ausblenden (Zustand
+    // bleibt erhalten), bei Abbruch wieder einblenden, bei Auswahl wie eine
+    // normale Einzelauswahl abschliessen (rex:selectLink/Callback).
+    function pickMediaFromOverlay() {
+        if (!state.open || !state.mediaAllowed || !state.callback) return;
+        var started = pickMedia(function (link, filename) {
+            if (!state.open) return;
+            finishSingle(link, filename, { source: 'media', id: filename, link: link, label: filename, filename: filename });
+        }, function () {
+            if (!state.open) return;
+            els.root.hidden = false;
+            els.overlay.classList.add('lm-open');
+            els.list.focus();
+        });
+        if (started) {
+            els.overlay.classList.remove('lm-open');
+            els.root.hidden = true;
+        }
+    }
+
     function finishSingle(link, name, article) {
         var callback = state.callback;
         emit('select', { link: link, name: name, article: article });
@@ -1516,6 +1621,9 @@
         },
         t: t,
         config: function () { ensureConfig(); return config; },
+        pickMedia: pickMedia,
+        /** true, wenn Medien verlinkt werden koennen (Recht + Einstellung + Medienpool/MediaPlace). */
+        mediaAvailable: function () { ensureConfig(); return mediaAvailable(); },
         /** Links (redaxo://ID, yform://tabelle/id) zu Items aufloesen -- Promise<Array<item>>. */
         resolveLinks: function (links, clang) {
             if (!ensureConfig()) return Promise.resolve([]);
