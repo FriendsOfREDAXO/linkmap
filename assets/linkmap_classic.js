@@ -184,6 +184,24 @@
         return popup;
     }
 
+    /**
+     * Medienlink aus einem Link-Dialog: Datei waehlen (MediaPlace bzw.
+     * klassischer Medienpool, siehe LM.pickMedia()) und wie bei der Linkmap
+     * rex:selectLink mit /media/datei.pdf auf dem FakePopup triggern.
+     */
+    function openMediaLink() {
+        var popup = new FakePopup();
+        var started = window.LM.pickMedia(function (link, filename) {
+            if (window.jQuery) {
+                window.jQuery(popup).trigger(window.jQuery.Event('rex:selectLink'), [link, filename]);
+            }
+            popup._markClosed();
+        }, function () {
+            popup._markClosed();
+        });
+        return started ? popup : null;
+    }
+
     var originalNewLinkMapWindow = null;
 
     function install() {
@@ -207,6 +225,14 @@
             originalNewLinkMapWindow = window.newLinkMapWindow;
         }
         window.newLinkMapWindow = function (link) {
+            // TinyMCE oeffnet bei einem bestehenden /media/-Link direkt den
+            // Medienpool ueber newLinkMapWindow() (openMyLinkMap()) und
+            // erwartet rex:selectLink. Mit MediaPlace landete das sonst im
+            // Takeover-Popup und lieferte nur den nackten Dateinamen.
+            if (/[?&]page=mediapool\/media(&|$)/.test(String(link || '')) && window.LM.mediaAvailable()) {
+                var mediaPopup = openMediaLink();
+                if (mediaPopup) return mediaPopup;
+            }
             if (/[?&]page=(linkmap|insertlink)(&|$)/.test(String(link || ''))) {
                 var params = parseParams(link);
                 var field = params.opener_input_field || '';
@@ -265,6 +291,15 @@
         },
         resolve: function (ids, clang) {
             return window.LM.resolve(ids, clang);
+        },
+        // Datei aus dem Medienpool verlinken, ohne Linkmap-Overlay:
+        // onSelect(link, filename) mit link = /media/datei.pdf. Nutzt
+        // MediaPlace, wenn vorhanden. false = kein Medienpool verfuegbar.
+        pickMedia: function (onSelect, onCancel) {
+            return window.LM.pickMedia(onSelect, onCancel);
+        },
+        mediaAvailable: function () {
+            return window.LM.mediaAvailable();
         }
     };
 })();

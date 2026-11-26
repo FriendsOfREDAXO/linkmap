@@ -47,7 +47,7 @@ Zwei Stolperfallen aus der Praxis: Ein url-Addon-Profil „für alle Sprachen“
 
 | Bereich | Funktion |
 | --- | --- |
-| Kopfzeile | Domain-Filter (mit yrewrite und mindestens zwei Domains), Sprachwahl, Suche nach Name oder ID, Vollbild |
+| Kopfzeile | Domain-Filter (mit yrewrite und mindestens zwei Domains), Sprachwahl, Suche nach Name oder ID, „Medium auswählen“ (nur im Link-Dialog der Editoren), Vollbild |
 | Sidebar | Struktur mit Live-Filter nach Name, ID oder Domain, Favoriten (Stern an einer Kategorie), Datensätze (freigegebene YForm-Tabellen), Zuletzt bearbeitet |
 | Inhalt | Unterkategorien und Artikel der Kategorie mit ID, Status und Änderungsdatum; eine Kategorie lässt sich über den Haken neben dem Pfeil direkt auswählen (verlinkt ihren Startartikel), ohne sie zu öffnen. Suchergebnisse mit Pfad. Datensätze als sortierbare Tabelle mit „Neuer Datensatz“ und „Datensatz bearbeiten“ |
 | Fußzeile | „Nur Online anzeigen“, bei Mehrfachauswahl Zähler und Übernehmen |
@@ -55,6 +55,14 @@ Zwei Stolperfallen aus der Praxis: Ein url-Addon-Profil „für alle Sprachen“
 Startartikel und Startseite haben eigene Icons und Farben. Status-Erweiterungen wie „gesperrt“ aus dem accessdenied-Addon werden mit Label und Icon angezeigt; ist dort „Kategoriestatus vererben“ aktiv, gelten Artikel und Unterkategorien gesperrter Kategorien ebenfalls als gesperrt, markiert mit „(vererbt)“ und der sperrenden Kategorie im Tooltip.
 
 Tastatur: `↓`/`↑` bewegen, `Enter` wählt, `Leertaste` markiert (Mehrfachauswahl), `Backspace` eine Ebene hoch, `Esc` schließt.
+
+### Medien verlinken
+
+Im Link-Dialog von CKEditor 5, TinyMCE, MForm oder Builder steht oben rechts der Button „Medium auswählen“. Er öffnet MediaPlace, wenn das Addon installiert ist, sonst den klassischen Medienpool. Die gewählte Datei wird als `/media/datei.pdf` verlinkt; bricht man ab, ist die Linkmap wieder da.
+
+Hat ein Link bereits ein Medium als Ziel (`/media/…`), öffnet TinyMCE beim Durchsuchen direkt die Medienauswahl. Den Popup-Aufruf, den TinyMCE dafür nutzt, fängt Linkmap ab und liefert wie bei Artikeln `rex:selectLink` mit dem vollständigen Pfad, nicht nur den Dateinamen.
+
+Der Button erscheint nur bei Einzelauswahl ohne festes Zielfeld (`REX_LINK`-Felder speichern Artikel-IDs), nur für Benutzer mit Medienpool-Recht und nur, wenn die Einstellung „Medien im Link-Dialog anbieten“ aktiv ist.
 
 ## Für Entwickler
 
@@ -83,6 +91,9 @@ LM.open();
 // Datensätze freischalten -- nur wenn der Wert ein Link-String sein darf
 LM.open(callback, { sources: 'all' });          // oder ['article', 'yform']
 
+// Medien-Button erzwingen oder abschalten (Default: an bei sources 'all')
+LM.open(callback, { sources: 'all', media: false });
+
 // Kategorie-Picker: nur Kategorien, Ergebnis ist der Startartikel (redaxo://<Kategorie-ID>)
 LM.open(callback, { categoriesOnly: true });      // oder rex5LinkmapBridge.pickCategory(callback)
 
@@ -96,6 +107,10 @@ LM.close(); LM.isOpen();
 LM.on('select', fn);                       // Events: open, close, select
 LM.resolve([12, 15], 1);                   // Promise<Array<article>>
 LM.resolveLinks(['redaxo://5', 'yform://rex_news/3'], 1); // Promise<Array<item>>
+
+// Medium ohne Overlay wählen (MediaPlace, sonst klassischer Medienpool)
+LM.pickMedia(function (link, filename) { ... }, function () { /* abgebrochen */ }); // link = "/media/datei.pdf"
+LM.mediaAvailable();                       // Recht + Einstellung + Medienpool vorhanden
 ```
 
 Die Bridge folgt dem Muster von `rex5MediaplaceBridge` und ist der empfohlene Einstieg für Editoren:
@@ -104,6 +119,7 @@ Die Bridge folgt dem Muster von `rex5MediaplaceBridge` und ist der empfohlene Ei
 if (window.rex5LinkmapBridge && rex5LinkmapBridge.isActive()) {
     rex5LinkmapBridge.pick(function (link, name, item) { ... }, { sources: 'all' });
     rex5LinkmapBridge.pickDataset('rex_news', function (link, name, item) { ... });
+    rex5LinkmapBridge.pickMedia(function (link, filename) { ... }); // link = "/media/datei.pdf"
 }
 ```
 
@@ -208,6 +224,7 @@ SchemeRegistry::register(new MeinSchemaProvider());   // implements SchemeProvid
 
 - Klassische Linkmap ersetzen (Default an)
 - Verlauf: Anzahl Artikel (15), Suche: maximale Treffer (50)
+- Medien im Link-Dialog anbieten (an)
 - yform://-Links im Frontend auflösen (an), Altformate ebenfalls auflösen (aus)
 - Datensatz-Quellen: Tabellenfreigabe und Konfiguration
 
